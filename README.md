@@ -3,6 +3,8 @@ Set of tools to measure and compare database performance.
 
 Main goal is to identify performance issues on production system before they hit your business and on test environments before they hit production system. Xdbtime tools and reports can help to set up processes to compare database performance in  production databases periodically and in performance test environments before every release.
 
+![alt test](images/image_readme.png)
+
 **xdbtime reports** are designed to compare database performance metrics visually in a simple way. Graphical representation minimises time required to analyse the report. It starts from the high level metrics like Database time and allows to go into details to find answers. You can classify your SQLs into groups which allows visually correlate changes in different SQL metrics. Conditional formatting attracts your attention to main drivers. It does not require DBA knowledge to review database performance report.
 
 xdbtime is initially designed for Oracle databases. There are 2 configurations based on source of performance metrics:
@@ -13,8 +15,6 @@ xdbtime supports Oracle 12c - 19c XE, SE, EE, EE-HP, EE-EP.
 xdbtime reports were also tested on Oracle Cloud Databases (incl Autonomous database) and AWS Oracle RDS databases.
 
 xdbtime for MySQL will be released soon.
-
-picture
 
 ## xdbtime - Period Comparison Report for Oracle
 
