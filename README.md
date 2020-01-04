@@ -161,12 +161,16 @@ select * from XDBSNAPSHOT.TBL_SNAPSHOT order by 1 desc;
 
 Example of `create_xdbsnapshot_scheme.sql` execution:
 ```
-SQL> @xdbsnapshot_oc_19ee.sql
+SQL> @create_xdbsnapshot_scheme.sql
 
 User XDBSNAPSHOT created.
+
 Grant succeeded.
+
 Grant succeeded.
+
 Grant succeeded.
+
 Table XDBSNAPSHOT.TBL_ASH created.
 
 Table XDBSNAPSHOT.TBL_SYS_TIME_MODEL created.
