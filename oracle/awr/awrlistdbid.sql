@@ -1,0 +1,1 @@
+select dbid, instance_number, to_char(min(begin_interval_time),'DD-MM-YYYY HH24:MI:SS') min_begin_time, to_char(max(end_interval_time),'DD-MM-YYYY HH24:MI:SS') max_end_time  from cdb_hist_snapshot group by dbid, instance_number;
