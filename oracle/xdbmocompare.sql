@@ -1,56 +1,45 @@
 /*
- -- XDBTIME - Database Performance - Period Comparison Report (based on AWR data)
- -- Copyright (c) 2016, 2021, XDBTIME.  All rights reserved.
- -- filename: xdbtimeorclawr.sql
+    Copyright (c) 2016-2022 Taras Guliak XDBTIME
+    All rights reserved.
+    Version: 2022.01
+    
+    Performance Period Comparison Report (based on XDBMONITORING schema for XE and SE editions without AWR pack)
 
- -- Please set report destination folder before using. Line 60: define report_destination_folder = '/Users/'
- -- 	example for Windows users: define report_destination_folder = 'C:\Users\xdbtime\reports\'
- -- 	example for Mac users: define report_destination_folder = '/Users/xdbtime/reports/'
-
- -- 
- -- description: SQL script to generate Database Performance Comparison HTML report for 2 time periods for Oracle Database
- -- database: Oracle 12c-19c Enterprise Editions (EE, EE-HP, EE-EP) with Diagnostic Package License (AWR).
- -- how to use: 
- -- 	connect to cdb/pdb database using sqlplus or sqlcl. Privileges are required to access cdb_hist and gv$ views
- -- 	provide 8 parameters. Two time periods with 4 parameters each:
- --			1. Baseline: DBID - database ID (CDB/PDB)
- --			2. Baseline: INSTANCE_NUMBER 
- --			3. Baseline: START_SNAP_ID 
- --			4. Baseline: END_SNAP_ID
- --			5. Test run: DBID - database ID (CDB/PDB)
- --			6. Test run: INSTANCE_NUMBER 
- --			7. Test run: START_SNAP_ID 
- --			8. Test run: END_SNAP_ID
- -- 	Open report in Google Chrome (the only browser currently supported)
+	Description: SQL script to generate Database Performance Period Comparison HTML report for 2 performance test periods
+	Database: Oracle 12c-19c Express and Standard Editions (for single instance only).
  
- -- how does it work: SQL file spools into HTML file (HTML, CSS, JS, D3). D3 Copyright 2010-2017 Mike Bostock https://github.com/d3/d3/blob/master/LICENSE
- -- 				  You can use awrlistdbid.sql to list available dbid in AWR
- -- 				  You can use awrlistsnap.sql to list snapshots 
- -- example: 
- -- 	SQL> @xdbtimeorclawr.sql
- -- 	Enter parameters for Baseline
- -- 	Baseline: Enter DBID: 189780284
- -- 	Baseline: Enter Instance Number: 1
- -- 	Baseline: Enter Start Snapshot ID: 1
- -- 	Baseline: Enter End Snapshot ID: 15
- --		Enter parameters for Test Run
- -- 	Test Run: Enter DBID: 2185458275
- -- 	Test Run: Enter Instance Number: 1
- -- 	Test Run: Enter Start Snapshot ID: 1
- -- 	Test Run: Enter End Snapshot ID: 16
- -- 	Baseline:
- -- 	DBID: 189780284
- -- 	Instance number: 1
- -- 	Range of samples: [1,15]
- -- 	Range of time   : [03/01/2020 12:41,03/01/2020 15:00]
- -- 	Test Run:
- -- 	DBID: 2185458275
- -- 	Instance number: 1
- -- 	Range of samples: [1,16]
- -- 	Range of time   : [03/01/2020 11:26,03/01/2020 14:00]
- -- 	Report is running ...
- -- 	Report is written to /Users/xdbtime/Reports/XDBT_DB0103_189780284_1_1to15vs2185458275_1_1to16.html
+	How to use: 
+		connect to pdb database using sqlplus or sqlcl. Privileges are required to access XDBMONITORING schema and gv$ views
+		provide 4 parameters. Two time periods with 2 parameters each:
+			1. Baseline: START_SNAP_ID 
+			2. Baseline: END_SNAP_ID
+			3. Test run: START_SNAP_ID 
+			4. Test run: END_SNAP_ID
+
+	Open report in Google Chrome (the only browser currently supported)
+ 
+	How does it work: SQL file spools into HTML file (HTML, CSS, JS, D3). D3 Copyright 2010-2022 Mike Bostock https://github.com/d3/d3/blob/master/LICENSE
+ 		You can use xdbmolistsnap.sql to list snapshots 
+
+	example: 
+		SQL> @xdbmocompare.sql
+		Enter parameters for Baseline
+		Baseline: Enter Start Snapshot ID: 1743
+		Baseline: Enter End Snapshot ID: 1755
+		Enter parameters for Test Run
+		Test Run: Enter Start Snapshot ID: 1732
+		Test Run: Enter End Snapshot ID: 1740
+		Baseline:
+		Range of samples: [1743,1755]
+		Range of time   : [04/01/2020 12:31,04/01/2020 13:31]
+		Test Run:
+		Range of samples: [1732,1740]
+		Range of time   : [04/01/2020 11:36,04/01/2020 12:16]
+		Report is running ...
+		Report is written to ./reports/xdbmo_compare_1434084074_FETZ1POD_1743to1755vs1732to1740.html
+ 	
 */
+
 set echo off;
 set pages 0;
 set veri off;
@@ -59,12 +48,9 @@ set heading off;
 set linesize 2100;
 set trimspool on;
 set termout off;
-define report_destination_folder = '/Users/'
-
 column start_time new_value start_time;
 column finish_time new_value finish_time;
 column file_name new_value file_name;
-column html_name new_value html_name;
 column test_run_id_br new_value test_run_id_br;
 column test_run_id_tr new_value test_run_id_tr;
 column start_sample_id_br new_value start_sample_id_br;
@@ -75,45 +61,33 @@ column start_sample_id_tr new_value start_sample_id_tr;
 column finish_sample_id_tr new_value finish_sample_id_tr;
 column start_sample_time_tr new_value start_sample_time_tr;
 column finish_sample_time_tr new_value finish_sample_time_tr;
-column db_id_br new_value db_id_br;
-column db_id_tr new_value db_id_tr;
-column inst_id_br new_value inst_id_br;
-column inst_id_tr new_value inst_id_tr;
 
 set termout on;
 prompt Enter parameters for Baseline
-accept bldbid char prompt 'Baseline: Enter DBID: '
-accept blinstance_number char prompt 'Baseline: Enter Instance Number: '
 accept blstartsnap char prompt 'Baseline: Enter Start Snapshot ID: '
 accept blendsnap char prompt 'Baseline: Enter End Snapshot ID: '
 
 prompt Enter parameters for Test Run
-accept trdbid char prompt 'Test Run: Enter DBID: '
-accept trinstance_number char prompt 'Test Run: Enter Instance Number: '
 accept trstartsnap char prompt 'Test Run: Enter Start Snapshot ID: '
 accept trendsnap char prompt 'Test Run: Enter End Snapshot ID: '
 set termout off;
 
-select TRIM(dbid) db_id_br, TRIM(instance_number) inst_id_br, TRIM(snap_id) start_sample_id_br from cdb_hist_snapshot where dbid = &bldbid and instance_number = &blinstance_number and snap_id = &blstartsnap;
-select TRIM(dbid) db_id_br, TRIM(instance_number) inst_id_br, TRIM(snap_id) finish_sample_id_br from cdb_hist_snapshot where dbid = &bldbid and instance_number = &blinstance_number and snap_id = &blendsnap;
-select TRIM(dbid) db_id_tr, TRIM(instance_number) inst_id_tr, TRIM(snap_id) start_sample_id_tr from cdb_hist_snapshot where dbid = &trdbid and instance_number = &trinstance_number and snap_id = &trstartsnap;
-select TRIM(dbid) db_id_tr, TRIM(instance_number) inst_id_tr, TRIM(snap_id) finish_sample_id_tr from cdb_hist_snapshot where dbid = &trdbid and instance_number = &trinstance_number and snap_id = &trendsnap;
-select TO_CHAR(end_interval_time,'DD/MM/YYYY HH24:MI') start_sample_time_br from cdb_hist_snapshot where dbid = &db_id_br and instance_number = &inst_id_br and snap_id = &start_sample_id_br;
-select TO_CHAR(end_interval_time,'DD/MM/YYYY HH24:MI') finish_sample_time_br from cdb_hist_snapshot where dbid = &db_id_br and instance_number = &inst_id_br and snap_id = &finish_sample_id_br;
-select TO_CHAR(end_interval_time,'DD/MM/YYYY HH24:MI') start_sample_time_tr from cdb_hist_snapshot where dbid = &db_id_tr and instance_number = &inst_id_tr and snap_id = &start_sample_id_tr;
-select TO_CHAR(end_interval_time,'DD/MM/YYYY HH24:MI') finish_sample_time_tr from cdb_hist_snapshot where dbid = &db_id_tr and instance_number = &inst_id_tr and snap_id = &finish_sample_id_tr;
+select TRIM(sample_id) start_sample_id_br from XDBMONITORING.tbl_snapshot where sample_id = &blstartsnap;
+select TRIM(sample_id) finish_sample_id_br from XDBMONITORING.tbl_snapshot where sample_id = &blendsnap;
+select TRIM(sample_id) start_sample_id_tr from XDBMONITORING.tbl_snapshot where sample_id = &trstartsnap;
+select TRIM(sample_id) finish_sample_id_tr from XDBMONITORING.tbl_snapshot where sample_id = &trendsnap;
+select TO_CHAR(sample_time,'DD/MM/YYYY HH24:MI') start_sample_time_br from XDBMONITORING.tbl_snapshot where sample_id = &start_sample_id_br;
+select TO_CHAR(sample_time,'DD/MM/YYYY HH24:MI') finish_sample_time_br from XDBMONITORING.tbl_snapshot where sample_id = &finish_sample_id_br;
+select TO_CHAR(sample_time,'DD/MM/YYYY HH24:MI') start_sample_time_tr from XDBMONITORING.tbl_snapshot where sample_id = &start_sample_id_tr;
+select TO_CHAR(sample_time,'DD/MM/YYYY HH24:MI') finish_sample_time_tr from XDBMONITORING.tbl_snapshot where sample_id = &finish_sample_id_tr;
 
-select '&report_destination_folder'||'XDBT_'||name||'_'||'&db_id_br'||'_'||'&inst_id_br'||'_'||'&start_sample_id_br'||'to'||'&finish_sample_id_br'||'vs'||'&db_id_tr'||'_'||'&inst_id_tr'||'_'||'&start_sample_id_tr'||'to'||'&finish_sample_id_tr'||'.html' file_name, 'DB_Perf_'||to_char(dbid)||'_'||name||'_'||'&start_sample_id_br'||'to'||'&finish_sample_id_br'||'vs'||'&start_sample_id_tr'||'to'||'&finish_sample_id_tr' html_name from v$database;
+select './reports/'||'xdbmo_compare_'||'XDBT_'||to_char(dbid)||'_'||name||'_'||'&start_sample_id_br'||'to'||'&finish_sample_id_br'||'vs'||'&start_sample_id_tr'||'to'||'&finish_sample_id_tr'||'.html' file_name from v$database;
 
 set termout on;
 prompt Baseline:
-prompt DBID: &db_id_br
-prompt Instance number: &inst_id_br
 prompt Range of samples: [&start_sample_id_br,&finish_sample_id_br]
 prompt Range of time   : [&start_sample_time_br,&finish_sample_time_br]
 prompt Test Run:
-prompt DBID: &db_id_tr
-prompt Instance number: &inst_id_tr
 prompt Range of samples: [&start_sample_id_tr,&finish_sample_id_tr]
 prompt Range of time   : [&start_sample_time_tr,&finish_sample_time_tr]
 prompt Report is running ...
@@ -240,14 +214,14 @@ prompt  </head>
 prompt  <body>
 prompt    <header class="header">
 prompt    <a href="https://www.xdbtime.com">  
-prompt    <img src="https://www.xdbtime.com/images/logo-white.png" alt="" height="25" /> 
+prompt    	<img src="https://www.xdbtime.com/images/logo-white.png" alt="" height="25" /> 
 prompt    </a>
 prompt    </header>
 prompt    <div class="main-wrapper" id="main-wrapper">
 prompt
 prompt
 prompt      <h1>Database Performance Comparison Report</h1>
-prompt      <h5>for Oracle 12c - 19c Enterprise Editions (based on AWR data)</h5>
+prompt      <h5>for Oracle 12c - 19c XE/SE editions (based on xdbmonitoring schema)</h5>
 prompt      <div id="chartMain">  </div>
 prompt      <main>
 prompt        <h2>
@@ -260,7 +234,7 @@ prompt            </svg>
 prompt          </button>
 prompt        </h2>
 prompt        <div id="chartSysTimeModel" hidden>
-prompt          <p>System Time Model table data is based on cdb_hist_sys_time_model view </p>
+prompt          <p>System Time Model table data is based on v$sys_time_model view </p>
 prompt        </div>
 prompt        <h2>
 prompt          <button aria-expanded="false" >
@@ -272,7 +246,7 @@ prompt            </svg>
 prompt          </button>
 prompt        </h2>
 prompt        <div id="chartDbTime" hidden>
-prompt          <p>Database Time charts are based on cdb_hist_sys_time_model view (DB Time, CPU Time) and cdb_hist_sysstat view (User IO wait time). Other Waits are calculated as difference between DB Time, DB CPU and User IO Time </p>
+prompt          <p>Database Time charts are based on v$sys_time_model view (DB Time, CPU Time) and v$sysstat view (User IO wait time). Other Waits are calculated as difference between DB Time, DB CPU and User IO Time </p>
 prompt        </div>
 prompt        <h2>
 prompt          <button aria-expanded="false" >
@@ -284,7 +258,7 @@ prompt            </svg>
 prompt          </button>
 prompt        </h2>
 prompt        <div id="chartWaitClasses" hidden>
-prompt          <p>Wait Classes charts are based on cdb_hist_system_event view  </p>
+prompt          <p>Wait Classes charts are based on v$system_event view  </p>
 prompt        </div>
 prompt        <h2>
 prompt          <button aria-expanded="false" >
@@ -296,7 +270,7 @@ prompt            </svg>
 prompt          </button>
 prompt        </h2>
 prompt        <div id="chartAsh" hidden>
-prompt          <p>Active Session History is based on cdb_hist_active_sess_history view </p>
+prompt          <p>Active Session History is based on v$session view </p>
 prompt        </div>
 prompt        <h2>
 prompt          <button aria-expanded="false" >
@@ -308,7 +282,7 @@ prompt            </svg>
 prompt          </button>
 prompt        </h2>
 prompt        <div id="chartSqlStatCharts" hidden>
-prompt          <p>SQL Statistics charts are based on cdb_hist_sqlstat view. SQL statistics are grouped by SQL_ID and execution plan. SQL classification is based on SQL_ID. There are 3 default classes: Aged Out, New and Unclassified. </p>
+prompt          <p>SQL Statistics charts are based on v$sqlstats view. SQL statistics are grouped by SQL_ID and execution plan. SQL classification is based on SQL_ID. There are 3 default classes: Aged Out, New and Unclassified. </p>
 prompt        </div>
 prompt        <h2>
 prompt          <button aria-expanded="false" >
@@ -320,7 +294,7 @@ prompt            </svg>
 prompt          </button>
 prompt        </h2>
 prompt        <div id="chartSqlStatTables" hidden>
-prompt          <p>SQL statistics tables are based on cdb_hist_sqlstat view. SQL statistics are grouped by SQL_ID and execution plan. SQL classification is based on SQL_ID. There are 3 default classes: Aged Out, New and Unclassified. </p>
+prompt          <p>SQL statistics tables are based on v$sqlstats view.SQL statistics are grouped by SQL_ID and execution plan. SQL classification is based on SQL_ID. There are 3 default classes: Aged Out, New and Unclassified. </p>
 prompt        </div>
 prompt        <h2>
 prompt          <button aria-expanded="false" >
@@ -332,7 +306,7 @@ prompt            </svg>
 prompt          </button>
 prompt        </h2>
 prompt        <div id="chartSysStat" hidden>
-prompt          <p>System Statistics are based on cdb_hist_sysstat view </p>
+prompt          <p>System Statistics are based on v$sysstat view </p>
 prompt        </div>
 prompt        <h2>
 prompt          <button aria-expanded="false" >
@@ -344,7 +318,7 @@ prompt            </svg>
 prompt          </button>
 prompt        </h2>
 prompt        <div id="chartSqlText" hidden>
-prompt          <p>SQL text is based on cdb_hist_sqltext </p>
+prompt          <p>SQL text is based on TBL_SQL_TEXT </p>
 prompt        </div>
 prompt      </main>
 prompt    </div>
@@ -452,8 +426,8 @@ prompt  if (dbTimeInputData.length > i1) {
 prompt  startTime = dbTimeInputData[i1].date;;
 prompt  }
 prompt
-prompt
 prompt  }
+prompt
 prompt  }
 prompt  return dbTimeArray
 prompt  }
@@ -542,8 +516,8 @@ prompt  if (ashInputData.length > i1) {
 prompt  startTime = ashInputData[i1].date;;
 prompt  }
 prompt
-prompt
 prompt  }
+prompt
 prompt  }
 prompt  return ashArray
 prompt  }
@@ -645,7 +619,6 @@ prompt
 prompt  }
 prompt  return svgStackedArea;;
 prompt  }
-prompt
 prompt
 prompt  var svgBarChartDraw = function (svgWidth, svgHeight, statName, svgObjName, pColors, chartName, axisName) {
 prompt  var margin = {top: 100, right: 20, bottom: 30, left: 40},
@@ -929,11 +902,9 @@ select '+ "'||to_char(sample_time,'DD/MM/YYYY HH24:MI:SS')||','||wait_class||','
 	NVL(WAIT_CLASS,'CPU') wait_class,
 	COUNT(*) cnt
 FROM
-	cdb_hist_active_sess_history 
+	XDBMONITORING.tbl_ash
 WHERE
-	dbid = &db_id_br
-    and instance_number = &inst_id_br
-	and sample_time BETWEEN TO_DATE('&start_sample_time_br', 'DD/MM/YYYY HH24:MI:SS') AND TO_DATE('&finish_sample_time_br', 'DD/MM/YYYY HH24:MI:SS')
+	sample_time BETWEEN TO_DATE('&start_sample_time_br', 'DD/MM/YYYY HH24:MI:SS') AND TO_DATE('&finish_sample_time_br', 'DD/MM/YYYY HH24:MI:SS')
 GROUP BY
 	sample_time,
 	NVL(WAIT_CLASS,'CPU')
@@ -947,68 +918,54 @@ select '+ "'||to_char(sample_time,'DD/MM/YYYY HH24:MI:SS')||','||wait_class||','
 	NVL(WAIT_CLASS,'CPU') wait_class,
 	COUNT(*) cnt
 FROM
-	cdb_hist_active_sess_history 
+	XDBMONITORING.tbl_ash
 WHERE
-	dbid = &db_id_tr
-    and instance_number = &inst_id_tr
-	and sample_time BETWEEN TO_DATE('&start_sample_time_tr', 'DD/MM/YYYY HH24:MI:SS') AND TO_DATE('&finish_sample_time_tr', 'DD/MM/YYYY HH24:MI:SS')
+	sample_time BETWEEN TO_DATE('&start_sample_time_tr', 'DD/MM/YYYY HH24:MI:SS') AND TO_DATE('&finish_sample_time_tr', 'DD/MM/YYYY HH24:MI:SS')
 GROUP BY
 	sample_time,
 	NVL(WAIT_CLASS,'CPU')
 ORDER BY 1,2);
 prompt  ;;
 prompt   var csvDbTimeBr = "date,key,value\n"
-select '+ "'||to_char(end_interval_time,'DD/MM/YYYY HH24:MI')||','||DECODE(stat_name,'user I/O wait time','User I/O','DB CPU','DB CPU','DB time','DB Time')||','||TO_CHAR(ROUND((value-prev_value)/1000000,1),'FM99999999999.99')||'\n"' from
-(select ss.snap_id, end_interval_time, stat_name, value, lag(value, 1, 0) over (partition by stat_name order by stat_name, end_interval_time) prev_value
-from cdb_hist_sys_time_model ss
-inner join cdb_hist_snapshot s on ss.dbid=s.dbid and ss.instance_number=s.instance_number and ss.snap_id = s.snap_id
+select '+ "'||to_char(sample_time,'DD/MM/YYYY HH24:MI')||','||DECODE(stat_name,'user I/O wait time','User I/O','DB CPU','DB CPU','DB time','DB Time')||','||TO_CHAR(ROUND((value-prev_value)/1000000,1),'FM99999999999.99')||'\n"' from
+(select sample_id, sample_time, stat_name, value, lag(value, 1, 0) over (partition by stat_name order by stat_name, sample_time) prev_value
+from XDBMONITORING.tbl_sys_time_model ss
 where stat_name in ('DB time','DB CPU')
-and ss.dbid = &db_id_br
-and ss.instance_number = &inst_id_br
-and ss.snap_id between &start_sample_id_br and &finish_sample_id_br
+and sample_id between &start_sample_id_br and &finish_sample_id_br
 union
-select ss.snap_id, end_interval_time, stat_name stat_name, value*10000, (lag(value, 1, 0) over (partition by stat_name order by stat_name, end_interval_time))*10000 prev_value
-from cdb_hist_sysstat ss
-inner join cdb_hist_snapshot s on ss.dbid=s.dbid and ss.instance_number=s.instance_number and ss.snap_id = s.snap_id
-where stat_name in ('user I/O wait time')
-and ss.dbid = &db_id_br
-and ss.instance_number = &inst_id_br
-and ss.snap_id between &start_sample_id_br and &finish_sample_id_br
+select sample_id, sample_time, name stat_name, value*10000, (lag(value, 1, 0) over (partition by name order by name, sample_time))*10000 prev_value
+from XDBMONITORING.tbl_sysstat ss
+where name in ('user I/O wait time')
+and sample_id between &start_sample_id_br and &finish_sample_id_br
 )
 where prev_value!=0
-order by snap_id, stat_name;
+order by sample_time, stat_name;
 prompt ;;
 prompt   var csvDbTimeTr = "date,key,value\n"
-select '+ "'||to_char(end_interval_time,'DD/MM/YYYY HH24:MI')||','||DECODE(stat_name,'user I/O wait time','User I/O','DB CPU','DB CPU','DB time','DB Time')||','||TO_CHAR(ROUND((value-prev_value)/1000000,1),'FM99999999999.99')||'\n"' from
-(select ss.snap_id, end_interval_time, stat_name, value, lag(value, 1, 0) over (partition by stat_name order by stat_name, end_interval_time) prev_value
-from cdb_hist_sys_time_model ss
-inner join cdb_hist_snapshot s on ss.dbid=s.dbid and ss.instance_number=s.instance_number and ss.snap_id = s.snap_id
+select '+ "'||to_char(sample_time,'DD/MM/YYYY HH24:MI')||','||DECODE(stat_name,'user I/O wait time','User I/O','DB CPU','DB CPU','DB time','DB Time')||','||TO_CHAR(ROUND((value-prev_value)/1000000,1),'FM99999999999.99')||'\n"' from
+(select sample_id, sample_time, stat_name, value, lag(value, 1, 0) over (partition by stat_name order by stat_name, sample_time) prev_value
+from XDBMONITORING.tbl_sys_time_model ss
 where stat_name in ('DB time','DB CPU')
-and ss.dbid = &db_id_tr
-and ss.instance_number = &inst_id_tr
-and ss.snap_id between &start_sample_id_tr and &finish_sample_id_tr
+and sample_id between &start_sample_id_tr and &finish_sample_id_tr
 union
-select ss.snap_id, end_interval_time, stat_name stat_name, value*10000, (lag(value, 1, 0) over (partition by stat_name order by stat_name, end_interval_time))*10000 prev_value
-from cdb_hist_sysstat ss
-inner join cdb_hist_snapshot s on ss.dbid=s.dbid and ss.instance_number=s.instance_number and ss.snap_id = s.snap_id
-where stat_name in ('user I/O wait time')
-and ss.dbid = &db_id_tr
-and ss.instance_number = &inst_id_tr
-and ss.snap_id between &start_sample_id_tr and &finish_sample_id_tr
+select sample_id, sample_time, name stat_name, value*10000, (lag(value, 1, 0) over (partition by name order by name, sample_time))*10000 prev_value
+from XDBMONITORING.tbl_sysstat ss
+where name in ('user I/O wait time')
+and sample_id between &start_sample_id_tr and &finish_sample_id_tr
 )
 where prev_value!=0
-order by snap_id, stat_name;
+order by sample_time, stat_name;
 prompt ;;
 prompt var csvWaitEvents = "wait_class,wait_event,tst_before,tst_after\n"
 with br as (
 select en.wait_class, en.name, ROUND((NVL(ef.time_waited_micro,0) - NVL(es.time_waited_micro,0))/1000000,1) time_delta_min  from v$event_name en
-left join (select wait_class, event_name event, time_waited_micro from cdb_hist_system_event where dbid = &db_id_br and instance_number = &inst_id_br and snap_id = &start_sample_id_br) es ON en.wait_class = es.wait_class AND en.name = es.event
-left join (select wait_class, event_name event, time_waited_micro from cdb_hist_system_event where dbid = &db_id_br and instance_number = &inst_id_br and snap_id = &finish_sample_id_br) ef ON en.wait_class = ef.wait_class AND en.name = ef.event
+left join (select wait_class, event, time_waited_micro from XDBMONITORING.tbl_system_event where sample_id = &start_sample_id_br) es ON en.wait_class = es.wait_class AND en.name = es.event
+left join (select wait_class, event, time_waited_micro from XDBMONITORING.tbl_system_event where sample_id = &finish_sample_id_br) ef ON en.wait_class = ef.wait_class AND en.name = ef.event
 where ROUND((NVL(ef.time_waited_micro,0) - NVL(es.time_waited_micro,0))/1000000,1) > 0)
 , tr as (
 select en.wait_class, en.name, ROUND((NVL(ef.time_waited_micro,0) - NVL(es.time_waited_micro,0))/1000000,1) time_delta_min  from v$event_name en
-left join (select wait_class, event_name event, time_waited_micro from cdb_hist_system_event where dbid = &db_id_tr and instance_number = &inst_id_tr and snap_id = &start_sample_id_tr) es ON en.wait_class = es.wait_class AND en.name = es.event
-left join (select wait_class, event_name event, time_waited_micro from cdb_hist_system_event where dbid = &db_id_tr and instance_number = &inst_id_tr and snap_id = &finish_sample_id_tr) ef ON en.wait_class = ef.wait_class AND en.name = ef.event
+left join (select wait_class, event, time_waited_micro from XDBMONITORING.tbl_system_event where sample_id = &start_sample_id_tr) es ON en.wait_class = es.wait_class AND en.name = es.event
+left join (select wait_class, event, time_waited_micro from XDBMONITORING.tbl_system_event where sample_id = &finish_sample_id_tr) ef ON en.wait_class = ef.wait_class AND en.name = ef.event
 where ROUND((NVL(ef.time_waited_micro,0) - NVL(es.time_waited_micro,0))/1000000,1) > 0)
 select '+ "'||en.wait_class||','||en.name||','||TO_CHAR(BR.TIME_DELTA_MIN,'FM9999999999.99')||','||TO_CHAR(TR.TIME_DELTA_MIN,'FM9999999999.99')||'\n"' from v$event_name en
 left join br ON br.wait_class = en.wait_class AND br.name = en.name
@@ -1104,35 +1061,33 @@ FROM
 (SELECT
 SQL_ID,
 PLAN_HASH_VALUE,
-SUM(NVL(PARSE_CALLS_DELTA,0)) PARSE_CALLS,
-SUM(NVL(DISK_READS_DELTA,0)) DISK_READS,
-SUM(NVL(DIRECT_WRITES_DELTA,0)) DIRECT_WRITES,
-SUM(NVL(BUFFER_GETS_DELTA,0)) BUFFER_GETS,
-SUM(NVL(ROWS_PROCESSED_DELTA,0)) ROWS_PROCESSED,
-SUM(NVL(FETCHES_DELTA,0)) FETCHES,
-SUM(NVL(EXECUTIONS_DELTA,0)) EXECUTIONS,
-SUM(NVL(PX_SERVERS_EXECS_DELTA,0)) PX_SERVERS_EXECUTIONS,
-SUM(NVL(END_OF_FETCH_COUNT_DELTA,0)) END_OF_FETCH_COUNT,
-SUM(NVL(CPU_TIME_DELTA,0)) CPU_TIME,
-SUM(NVL(ELAPSED_TIME_DELTA,0)) ELAPSED_TIME,
-SUM(NVL(APWAIT_DELTA,0)) APPLICATION_WAIT_TIME,
-SUM(NVL(CCWAIT_DELTA,0)) CONCURRENCY_WAIT_TIME,
-SUM(NVL(CLWAIT_DELTA,0)) CLUSTER_WAIT_TIME,
-SUM(NVL(IOWAIT_DELTA,0)) USER_IO_WAIT_TIME,
-SUM(NVL(PLSEXEC_TIME_DELTA,0)) PLSQL_EXEC_TIME,
-SUM(NVL(JAVEXEC_TIME_DELTA,0)) JAVA_EXEC_TIME,
-SUM(NVL(SORTS_DELTA,0)) SORTS,
-SUM(NVL(LOADS_DELTA,0)) LOADS,
-SUM(NVL(INVALIDATIONS_DELTA,0)) INVALIDATIONS,
-SUM(NVL(PHYSICAL_READ_REQUESTS_DELTA,0)) PHYSICAL_READ_REQUESTS,
-SUM(NVL(PHYSICAL_READ_BYTES_DELTA,0)) PHYSICAL_READ_BYTES,
-SUM(NVL(PHYSICAL_WRITE_REQUESTS_DELTA,0)) PHYSICAL_WRITE_REQUESTS,
-SUM(NVL(PHYSICAL_WRITE_BYTES_DELTA,0)) PHYSICAL_WRITE_BYTES,
-SUM(NVL(IO_INTERCONNECT_BYTES_DELTA,0)) IO_INTERCONNECT_BYTES
-FROM cdb_hist_sqlstat
-WHERE dbid = &db_id_tr
-and instance_number = &inst_id_tr
-and snap_id between &start_sample_id_tr+1 and &finish_sample_id_tr
+SUM(NVL(DELTA_PARSE_CALLS,0)) PARSE_CALLS,
+SUM(NVL(DELTA_DISK_READS,0)) DISK_READS,
+SUM(NVL(DELTA_DIRECT_WRITES,0)) DIRECT_WRITES,
+SUM(NVL(DELTA_BUFFER_GETS,0)) BUFFER_GETS,
+SUM(NVL(DELTA_ROWS_PROCESSED,0)) ROWS_PROCESSED,
+SUM(NVL(DELTA_FETCH_COUNT,0)) FETCHES,
+SUM(NVL(DELTA_EXECUTION_COUNT,0)) EXECUTIONS,
+SUM(NVL(DELTA_PX_SERVERS_EXECUTIONS,0)) PX_SERVERS_EXECUTIONS,
+SUM(NVL(DELTA_END_OF_FETCH_COUNT,0)) END_OF_FETCH_COUNT,
+SUM(NVL(DELTA_CPU_TIME,0)) CPU_TIME,
+SUM(NVL(DELTA_ELAPSED_TIME,0)) ELAPSED_TIME,
+SUM(NVL(DELTA_APPLICATION_WAIT_TIME,0)) APPLICATION_WAIT_TIME,
+SUM(NVL(DELTA_CONCURRENCY_TIME,0)) CONCURRENCY_WAIT_TIME,
+SUM(NVL(DELTA_CLUSTER_WAIT_TIME,0)) CLUSTER_WAIT_TIME,
+SUM(NVL(DELTA_USER_IO_WAIT_TIME,0)) USER_IO_WAIT_TIME,
+SUM(NVL(DELTA_PLSQL_EXEC_TIME,0)) PLSQL_EXEC_TIME,
+SUM(NVL(DELTA_JAVA_EXEC_TIME,0)) JAVA_EXEC_TIME,
+SUM(NVL(DELTA_SORTS,0)) SORTS,
+SUM(NVL(DELTA_LOADS,0)) LOADS,
+SUM(NVL(DELTA_INVALIDATIONS,0)) INVALIDATIONS,
+SUM(NVL(DELTA_PHYSICAL_READ_REQUESTS,0)) PHYSICAL_READ_REQUESTS,
+SUM(NVL(DELTA_PHYSICAL_READ_BYTES,0)) PHYSICAL_READ_BYTES,
+SUM(NVL(DELTA_PHYSICAL_WRITE_REQUESTS,0)) PHYSICAL_WRITE_REQUESTS,
+SUM(NVL(DELTA_PHYSICAL_WRITE_BYTES,0)) PHYSICAL_WRITE_BYTES,
+SUM(NVL(DELTA_IO_INTERCONNECT_BYTES,0)) IO_INTERCONNECT_BYTES
+FROM XDBMONITORING.TBL_SQLSTATS
+WHERE sample_id between &start_sample_id_tr+1 and &finish_sample_id_tr
 GROUP BY SQL_ID,PLAN_HASH_VALUE))
 , br as (
 SELECT
@@ -1168,35 +1123,33 @@ FROM
 (SELECT
 SQL_ID,
 PLAN_HASH_VALUE,
-SUM(NVL(PARSE_CALLS_DELTA,0)) PARSE_CALLS,
-SUM(NVL(DISK_READS_DELTA,0)) DISK_READS,
-SUM(NVL(DIRECT_WRITES_DELTA,0)) DIRECT_WRITES,
-SUM(NVL(BUFFER_GETS_DELTA,0)) BUFFER_GETS,
-SUM(NVL(ROWS_PROCESSED_DELTA,0)) ROWS_PROCESSED,
-SUM(NVL(FETCHES_DELTA,0)) FETCHES,
-SUM(NVL(EXECUTIONS_DELTA,0)) EXECUTIONS,
-SUM(NVL(PX_SERVERS_EXECS_DELTA,0)) PX_SERVERS_EXECUTIONS,
-SUM(NVL(END_OF_FETCH_COUNT_DELTA,0)) END_OF_FETCH_COUNT,
-SUM(NVL(CPU_TIME_DELTA,0)) CPU_TIME,
-SUM(NVL(ELAPSED_TIME_DELTA,0)) ELAPSED_TIME,
-SUM(NVL(APWAIT_DELTA,0)) APPLICATION_WAIT_TIME,
-SUM(NVL(CCWAIT_DELTA,0)) CONCURRENCY_WAIT_TIME,
-SUM(NVL(CLWAIT_DELTA,0)) CLUSTER_WAIT_TIME,
-SUM(NVL(IOWAIT_DELTA,0)) USER_IO_WAIT_TIME,
-SUM(NVL(PLSEXEC_TIME_DELTA,0)) PLSQL_EXEC_TIME,
-SUM(NVL(JAVEXEC_TIME_DELTA,0)) JAVA_EXEC_TIME,
-SUM(NVL(SORTS_DELTA,0)) SORTS,
-SUM(NVL(LOADS_DELTA,0)) LOADS,
-SUM(NVL(INVALIDATIONS_DELTA,0)) INVALIDATIONS,
-SUM(NVL(PHYSICAL_READ_REQUESTS_DELTA,0)) PHYSICAL_READ_REQUESTS,
-SUM(NVL(PHYSICAL_READ_BYTES_DELTA,0)) PHYSICAL_READ_BYTES,
-SUM(NVL(PHYSICAL_WRITE_REQUESTS_DELTA,0)) PHYSICAL_WRITE_REQUESTS,
-SUM(NVL(PHYSICAL_WRITE_BYTES_DELTA,0)) PHYSICAL_WRITE_BYTES,
-SUM(NVL(IO_INTERCONNECT_BYTES_DELTA,0)) IO_INTERCONNECT_BYTES
-FROM cdb_hist_sqlstat
-WHERE dbid = &db_id_br
-and instance_number = &inst_id_br
-and snap_id between &start_sample_id_br+1 and &finish_sample_id_br
+SUM(NVL(DELTA_PARSE_CALLS,0)) PARSE_CALLS,
+SUM(NVL(DELTA_DISK_READS,0)) DISK_READS,
+SUM(NVL(DELTA_DIRECT_WRITES,0)) DIRECT_WRITES,
+SUM(NVL(DELTA_BUFFER_GETS,0)) BUFFER_GETS,
+SUM(NVL(DELTA_ROWS_PROCESSED,0)) ROWS_PROCESSED,
+SUM(NVL(DELTA_FETCH_COUNT,0)) FETCHES,
+SUM(NVL(DELTA_EXECUTION_COUNT,0)) EXECUTIONS,
+SUM(NVL(DELTA_PX_SERVERS_EXECUTIONS,0)) PX_SERVERS_EXECUTIONS,
+SUM(NVL(DELTA_END_OF_FETCH_COUNT,0)) END_OF_FETCH_COUNT,
+SUM(NVL(DELTA_CPU_TIME,0)) CPU_TIME,
+SUM(NVL(DELTA_ELAPSED_TIME,0)) ELAPSED_TIME,
+SUM(NVL(DELTA_APPLICATION_WAIT_TIME,0)) APPLICATION_WAIT_TIME,
+SUM(NVL(DELTA_CONCURRENCY_TIME,0)) CONCURRENCY_WAIT_TIME,
+SUM(NVL(DELTA_CLUSTER_WAIT_TIME,0)) CLUSTER_WAIT_TIME,
+SUM(NVL(DELTA_USER_IO_WAIT_TIME,0)) USER_IO_WAIT_TIME,
+SUM(NVL(DELTA_PLSQL_EXEC_TIME,0)) PLSQL_EXEC_TIME,
+SUM(NVL(DELTA_JAVA_EXEC_TIME,0)) JAVA_EXEC_TIME,
+SUM(NVL(DELTA_SORTS,0)) SORTS,
+SUM(NVL(DELTA_LOADS,0)) LOADS,
+SUM(NVL(DELTA_INVALIDATIONS,0)) INVALIDATIONS,
+SUM(NVL(DELTA_PHYSICAL_READ_REQUESTS,0)) PHYSICAL_READ_REQUESTS,
+SUM(NVL(DELTA_PHYSICAL_READ_BYTES,0)) PHYSICAL_READ_BYTES,
+SUM(NVL(DELTA_PHYSICAL_WRITE_REQUESTS,0)) PHYSICAL_WRITE_REQUESTS,
+SUM(NVL(DELTA_PHYSICAL_WRITE_BYTES,0)) PHYSICAL_WRITE_BYTES,
+SUM(NVL(DELTA_IO_INTERCONNECT_BYTES,0)) IO_INTERCONNECT_BYTES
+FROM XDBMONITORING.TBL_SQLSTATS
+WHERE sample_id between &start_sample_id_br+1 and &finish_sample_id_br
 GROUP BY SQL_ID,PLAN_HASH_VALUE))
 , s as (select '520mkxqpf15q8' sql_id, 'dual_example' sql_type from dual union
 select 'sqlid2' sql_id, 'sql_type2' sql_type from dual)
@@ -1281,8 +1234,8 @@ SELECT 'PL/SQL compilation elapsed time' name, 14 rnk, 2 lvl FROM DUAL UNION
 SELECT 'Java execution elapsed time' name, 15 rnk, 2 lvl FROM DUAL UNION
 SELECT 'background elapsed time' name, 16 rnk, 1 lvl FROM DUAL UNION
 SELECT 'background cpu time' name, 17 rnk, 2 lvl FROM DUAL)
-, tr as (select stat_name, max(value)-min(value) value from cdb_hist_sys_time_model where dbid = &db_id_tr and instance_number = &inst_id_tr and snap_id between &start_sample_id_tr and &finish_sample_id_tr group by stat_name)
-, br as (select stat_name, max(value)-min(value) value from cdb_hist_sys_time_model where dbid = &db_id_br and instance_number = &inst_id_br and snap_id between &start_sample_id_br and &finish_sample_id_br group by stat_name)
+, tr as (select stat_name, max(value)-min(value) value from XDBMONITORING.TBL_SYS_TIME_MODEL where sample_id between &start_sample_id_tr and &finish_sample_id_tr group by stat_name)
+, br as (select stat_name, max(value)-min(value) value from XDBMONITORING.TBL_SYS_TIME_MODEL where sample_id between &start_sample_id_br and &finish_sample_id_br group by stat_name)
 SELECT '+ "'||TO_CHAR(dic.rnk)||','||lpad('_',3*lvl-3,'_')||dic.name||','||TO_CHAR(ROUND(NVL(br.value,0)/1000000,0))||','||TO_CHAR(ROUND(NVL(tr.value,0)/1000000,0))||'\n"'  FROM dic
 LEFT JOIN tr ON dic.name = tr.stat_name
 LEFT JOIN br ON dic.name = br.stat_name
@@ -1290,17 +1243,13 @@ ORDER BY dic.rnk
 ;
 prompt ;;
 prompt
-prompt var csvDbSummary = "RUNID,DBNAME,CON_DBID,DB_UNIQUE_NAME,CDB,INSTANCE_NAME,INSTANCE_NUMBER,HOST_NAME,VERSION,EDITION,STARTUP_TIME,DATABASE_TYPE,CON_DB_ID,CON_NAME,OPEN_TIME,START_SNAP,END_SNAP,START_TIME,END_TIME\n"
-select '+ "Baseline,'||d.name||','||TO_CHAR(d.con_dbid)||','||d.db_unique_name||','||d.cdb||','||i.instance_name||','||i.instance_number||','||i.host_name||','||i.version||','||i.edition||','||to_char(i.startup_time,'DD.MM.YYYY HH24:MI:SS')||','||i.database_type||','||TO_CHAR(c.dbid)||','||c.name||','||to_char(c.open_time,'DD.MM.YYYY HH24:MI:SS')||',&start_sample_id_br'||',&finish_sample_id_br'||',&start_sample_time_br'||',&finish_sample_time_br'||'\n"'
-from v$database d
-left join gv$instance i on i.instance_number = &inst_id_br
-left join gv$containers c on i.instance_number = c.inst_id and c.dbid = &db_id_br
-UNION
-select '+ "Test run,'||d.name||','||TO_CHAR(d.con_dbid)||','||d.db_unique_name||','||d.cdb||','||i.instance_name||','||i.instance_number||','||i.host_name||','||i.version||','||i.edition||','||to_char(i.startup_time,'DD.MM.YYYY HH24:MI:SS')||','||i.database_type||','||TO_CHAR(c.dbid)||','||c.name||','||to_char(c.open_time,'DD.MM.YYYY HH24:MI:SS')||',&start_sample_id_tr'||',&finish_sample_id_tr'||',&start_sample_time_tr'||',&finish_sample_time_tr'||'\n"'
-from v$database d
-left join gv$instance i on i.instance_number = &inst_id_tr
-left join gv$containers c on i.instance_number = c.inst_id and c.dbid = &db_id_tr
-;
+prompt var csvDbSummary = "RUNID,DBID,DBNAME,CREATED,LOG_MODE,PLATFORM_NAME,INSTANCE_NUMBER,INSTANCE_NAME,HOST_NAME,VERSION,STARTUP_TIME,STATUS,START_SNAP,END_SNAP,START_TIME,END_TIME\n"
+select
+'+ "Baseline,'||TO_CHAR(d.dbid)||','||d.name||','||to_char(d.created,'DD.MM.YYYY HH24:MI:SS')||','||d.log_mode||','||d.platform_name||','||TO_CHAR(i.instance_number)||','||i.instance_name||','||i.host_name||','||i.version||','||to_char(i.startup_time,'DD.MM.YYYY HH24:MI:SS')||','||i.status||',&start_sample_id_br'||',&finish_sample_id_br'||',&start_sample_time_br'||',&finish_sample_time_br'||'\n"'
+from v$database d, v$instance i UNION
+select
+'+ "Test run,'||TO_CHAR(d.dbid)||','||d.name||','||to_char(d.created,'DD.MM.YYYY HH24:MI:SS')||','||d.log_mode||','||d.platform_name||','||TO_CHAR(i.instance_number)||','||i.instance_name||','||i.host_name||','||i.version||','||to_char(i.startup_time,'DD.MM.YYYY HH24:MI:SS')||','||i.status||',&start_sample_id_tr'||',&finish_sample_id_tr'||',&start_sample_time_tr'||',&finish_sample_time_tr'||'\n"'
+from v$database d, v$instance i;
 prompt ;;
 prompt
 prompt var csvSqlStatsChart = "stat_name,sql_type,value_b,value_t\n"
@@ -1338,35 +1287,33 @@ FROM
 (SELECT
 SQL_ID,
 PLAN_HASH_VALUE,
-SUM(NVL(PARSE_CALLS_DELTA,0)) PARSE_CALLS,
-SUM(NVL(DISK_READS_DELTA,0)) DISK_READS,
-SUM(NVL(DIRECT_WRITES_DELTA,0)) DIRECT_WRITES,
-SUM(NVL(BUFFER_GETS_DELTA,0)) BUFFER_GETS,
-SUM(NVL(ROWS_PROCESSED_DELTA,0)) ROWS_PROCESSED,
-SUM(NVL(FETCHES_DELTA,0)) FETCHES,
-SUM(NVL(EXECUTIONS_DELTA,0)) EXECUTIONS,
-SUM(NVL(PX_SERVERS_EXECS_DELTA,0)) PX_SERVERS_EXECUTIONS,
-SUM(NVL(END_OF_FETCH_COUNT_DELTA,0)) END_OF_FETCH_COUNT,
-SUM(NVL(CPU_TIME_DELTA,0)) CPU_TIME,
-SUM(NVL(ELAPSED_TIME_DELTA,0)) ELAPSED_TIME,
-SUM(NVL(APWAIT_DELTA,0)) APPLICATION_WAIT_TIME,
-SUM(NVL(CCWAIT_DELTA,0)) CONCURRENCY_WAIT_TIME,
-SUM(NVL(CLWAIT_DELTA,0)) CLUSTER_WAIT_TIME,
-SUM(NVL(IOWAIT_DELTA,0)) USER_IO_WAIT_TIME,
-SUM(NVL(PLSEXEC_TIME_DELTA,0)) PLSQL_EXEC_TIME,
-SUM(NVL(JAVEXEC_TIME_DELTA,0)) JAVA_EXEC_TIME,
-SUM(NVL(SORTS_DELTA,0)) SORTS,
-SUM(NVL(LOADS_DELTA,0)) LOADS,
-SUM(NVL(INVALIDATIONS_DELTA,0)) INVALIDATIONS,
-SUM(NVL(PHYSICAL_READ_REQUESTS_DELTA,0)) PHYSICAL_READ_REQUESTS,
-SUM(NVL(PHYSICAL_READ_BYTES_DELTA,0)) PHYSICAL_READ_BYTES,
-SUM(NVL(PHYSICAL_WRITE_REQUESTS_DELTA,0)) PHYSICAL_WRITE_REQUESTS,
-SUM(NVL(PHYSICAL_WRITE_BYTES_DELTA,0)) PHYSICAL_WRITE_BYTES,
-SUM(NVL(IO_INTERCONNECT_BYTES_DELTA,0)) IO_INTERCONNECT_BYTES
-FROM cdb_hist_sqlstat
-WHERE dbid = &db_id_tr
-and instance_number = &inst_id_tr
-and snap_id between &start_sample_id_tr+1 and &finish_sample_id_tr
+SUM(NVL(DELTA_PARSE_CALLS,0)) PARSE_CALLS,
+SUM(NVL(DELTA_DISK_READS,0)) DISK_READS,
+SUM(NVL(DELTA_DIRECT_WRITES,0)) DIRECT_WRITES,
+SUM(NVL(DELTA_BUFFER_GETS,0)) BUFFER_GETS,
+SUM(NVL(DELTA_ROWS_PROCESSED,0)) ROWS_PROCESSED,
+SUM(NVL(DELTA_FETCH_COUNT,0)) FETCHES,
+SUM(NVL(DELTA_EXECUTION_COUNT,0)) EXECUTIONS,
+SUM(NVL(DELTA_PX_SERVERS_EXECUTIONS,0)) PX_SERVERS_EXECUTIONS,
+SUM(NVL(DELTA_END_OF_FETCH_COUNT,0)) END_OF_FETCH_COUNT,
+SUM(NVL(DELTA_CPU_TIME,0)) CPU_TIME,
+SUM(NVL(DELTA_ELAPSED_TIME,0)) ELAPSED_TIME,
+SUM(NVL(DELTA_APPLICATION_WAIT_TIME,0)) APPLICATION_WAIT_TIME,
+SUM(NVL(DELTA_CONCURRENCY_TIME,0)) CONCURRENCY_WAIT_TIME,
+SUM(NVL(DELTA_CLUSTER_WAIT_TIME,0)) CLUSTER_WAIT_TIME,
+SUM(NVL(DELTA_USER_IO_WAIT_TIME,0)) USER_IO_WAIT_TIME,
+SUM(NVL(DELTA_PLSQL_EXEC_TIME,0)) PLSQL_EXEC_TIME,
+SUM(NVL(DELTA_JAVA_EXEC_TIME,0)) JAVA_EXEC_TIME,
+SUM(NVL(DELTA_SORTS,0)) SORTS,
+SUM(NVL(DELTA_LOADS,0)) LOADS,
+SUM(NVL(DELTA_INVALIDATIONS,0)) INVALIDATIONS,
+SUM(NVL(DELTA_PHYSICAL_READ_REQUESTS,0)) PHYSICAL_READ_REQUESTS,
+SUM(NVL(DELTA_PHYSICAL_READ_BYTES,0)) PHYSICAL_READ_BYTES,
+SUM(NVL(DELTA_PHYSICAL_WRITE_REQUESTS,0)) PHYSICAL_WRITE_REQUESTS,
+SUM(NVL(DELTA_PHYSICAL_WRITE_BYTES,0)) PHYSICAL_WRITE_BYTES,
+SUM(NVL(DELTA_IO_INTERCONNECT_BYTES,0)) IO_INTERCONNECT_BYTES
+FROM XDBMONITORING.TBL_SQLSTATS
+WHERE sample_id between &start_sample_id_tr+1 and &finish_sample_id_tr
 GROUP BY SQL_ID,PLAN_HASH_VALUE)
 WHERE ABS(ELAPSED_TIME)+ABS(BUFFER_GETS)+ABS(DISK_READS)+ABS(EXECUTIONS)>0)
 , br as (
@@ -1403,35 +1350,33 @@ FROM
 (SELECT
 SQL_ID,
 PLAN_HASH_VALUE,
-SUM(NVL(PARSE_CALLS_DELTA,0)) PARSE_CALLS,
-SUM(NVL(DISK_READS_DELTA,0)) DISK_READS,
-SUM(NVL(DIRECT_WRITES_DELTA,0)) DIRECT_WRITES,
-SUM(NVL(BUFFER_GETS_DELTA,0)) BUFFER_GETS,
-SUM(NVL(ROWS_PROCESSED_DELTA,0)) ROWS_PROCESSED,
-SUM(NVL(FETCHES_DELTA,0)) FETCHES,
-SUM(NVL(EXECUTIONS_DELTA,0)) EXECUTIONS,
-SUM(NVL(PX_SERVERS_EXECS_DELTA,0)) PX_SERVERS_EXECUTIONS,
-SUM(NVL(END_OF_FETCH_COUNT_DELTA,0)) END_OF_FETCH_COUNT,
-SUM(NVL(CPU_TIME_DELTA,0)) CPU_TIME,
-SUM(NVL(ELAPSED_TIME_DELTA,0)) ELAPSED_TIME,
-SUM(NVL(APWAIT_DELTA,0)) APPLICATION_WAIT_TIME,
-SUM(NVL(CCWAIT_DELTA,0)) CONCURRENCY_WAIT_TIME,
-SUM(NVL(CLWAIT_DELTA,0)) CLUSTER_WAIT_TIME,
-SUM(NVL(IOWAIT_DELTA,0)) USER_IO_WAIT_TIME,
-SUM(NVL(PLSEXEC_TIME_DELTA,0)) PLSQL_EXEC_TIME,
-SUM(NVL(JAVEXEC_TIME_DELTA,0)) JAVA_EXEC_TIME,
-SUM(NVL(SORTS_DELTA,0)) SORTS,
-SUM(NVL(LOADS_DELTA,0)) LOADS,
-SUM(NVL(INVALIDATIONS_DELTA,0)) INVALIDATIONS,
-SUM(NVL(PHYSICAL_READ_REQUESTS_DELTA,0)) PHYSICAL_READ_REQUESTS,
-SUM(NVL(PHYSICAL_READ_BYTES_DELTA,0)) PHYSICAL_READ_BYTES,
-SUM(NVL(PHYSICAL_WRITE_REQUESTS_DELTA,0)) PHYSICAL_WRITE_REQUESTS,
-SUM(NVL(PHYSICAL_WRITE_BYTES_DELTA,0)) PHYSICAL_WRITE_BYTES,
-SUM(NVL(IO_INTERCONNECT_BYTES_DELTA,0)) IO_INTERCONNECT_BYTES
-FROM cdb_hist_sqlstat
-WHERE dbid = &db_id_br
-and instance_number = &inst_id_br
-and snap_id between &start_sample_id_br+1 and &finish_sample_id_br
+SUM(NVL(DELTA_PARSE_CALLS,0)) PARSE_CALLS,
+SUM(NVL(DELTA_DISK_READS,0)) DISK_READS,
+SUM(NVL(DELTA_DIRECT_WRITES,0)) DIRECT_WRITES,
+SUM(NVL(DELTA_BUFFER_GETS,0)) BUFFER_GETS,
+SUM(NVL(DELTA_ROWS_PROCESSED,0)) ROWS_PROCESSED,
+SUM(NVL(DELTA_FETCH_COUNT,0)) FETCHES,
+SUM(NVL(DELTA_EXECUTION_COUNT,0)) EXECUTIONS,
+SUM(NVL(DELTA_PX_SERVERS_EXECUTIONS,0)) PX_SERVERS_EXECUTIONS,
+SUM(NVL(DELTA_END_OF_FETCH_COUNT,0)) END_OF_FETCH_COUNT,
+SUM(NVL(DELTA_CPU_TIME,0)) CPU_TIME,
+SUM(NVL(DELTA_ELAPSED_TIME,0)) ELAPSED_TIME,
+SUM(NVL(DELTA_APPLICATION_WAIT_TIME,0)) APPLICATION_WAIT_TIME,
+SUM(NVL(DELTA_CONCURRENCY_TIME,0)) CONCURRENCY_WAIT_TIME,
+SUM(NVL(DELTA_CLUSTER_WAIT_TIME,0)) CLUSTER_WAIT_TIME,
+SUM(NVL(DELTA_USER_IO_WAIT_TIME,0)) USER_IO_WAIT_TIME,
+SUM(NVL(DELTA_PLSQL_EXEC_TIME,0)) PLSQL_EXEC_TIME,
+SUM(NVL(DELTA_JAVA_EXEC_TIME,0)) JAVA_EXEC_TIME,
+SUM(NVL(DELTA_SORTS,0)) SORTS,
+SUM(NVL(DELTA_LOADS,0)) LOADS,
+SUM(NVL(DELTA_INVALIDATIONS,0)) INVALIDATIONS,
+SUM(NVL(DELTA_PHYSICAL_READ_REQUESTS,0)) PHYSICAL_READ_REQUESTS,
+SUM(NVL(DELTA_PHYSICAL_READ_BYTES,0)) PHYSICAL_READ_BYTES,
+SUM(NVL(DELTA_PHYSICAL_WRITE_REQUESTS,0)) PHYSICAL_WRITE_REQUESTS,
+SUM(NVL(DELTA_PHYSICAL_WRITE_BYTES,0)) PHYSICAL_WRITE_BYTES,
+SUM(NVL(DELTA_IO_INTERCONNECT_BYTES,0)) IO_INTERCONNECT_BYTES
+FROM XDBMONITORING.TBL_SQLSTATS
+WHERE sample_id between &start_sample_id_br+1 and &finish_sample_id_br
 GROUP BY SQL_ID,PLAN_HASH_VALUE)
 WHERE ABS(ELAPSED_TIME)+ABS(BUFFER_GETS)+ABS(DISK_READS)+ABS(EXECUTIONS)>0)
 , s as (select '520mkxqpf15q8' sql_id, 'dual_example' sql_type from dual union
@@ -1562,35 +1507,33 @@ FROM
 (SELECT
 SQL_ID,
 PLAN_HASH_VALUE,
-SUM(NVL(PARSE_CALLS_DELTA,0)) PARSE_CALLS,
-SUM(NVL(DISK_READS_DELTA,0)) DISK_READS,
-SUM(NVL(DIRECT_WRITES_DELTA,0)) DIRECT_WRITES,
-SUM(NVL(BUFFER_GETS_DELTA,0)) BUFFER_GETS,
-SUM(NVL(ROWS_PROCESSED_DELTA,0)) ROWS_PROCESSED,
-SUM(NVL(FETCHES_DELTA,0)) FETCHES,
-SUM(NVL(EXECUTIONS_DELTA,0)) EXECUTIONS,
-SUM(NVL(PX_SERVERS_EXECS_DELTA,0)) PX_SERVERS_EXECUTIONS,
-SUM(NVL(END_OF_FETCH_COUNT_DELTA,0)) END_OF_FETCH_COUNT,
-SUM(NVL(CPU_TIME_DELTA,0)) CPU_TIME,
-SUM(NVL(ELAPSED_TIME_DELTA,0)) ELAPSED_TIME,
-SUM(NVL(APWAIT_DELTA,0)) APPLICATION_WAIT_TIME,
-SUM(NVL(CCWAIT_DELTA,0)) CONCURRENCY_WAIT_TIME,
-SUM(NVL(CLWAIT_DELTA,0)) CLUSTER_WAIT_TIME,
-SUM(NVL(IOWAIT_DELTA,0)) USER_IO_WAIT_TIME,
-SUM(NVL(PLSEXEC_TIME_DELTA,0)) PLSQL_EXEC_TIME,
-SUM(NVL(JAVEXEC_TIME_DELTA,0)) JAVA_EXEC_TIME,
-SUM(NVL(SORTS_DELTA,0)) SORTS,
-SUM(NVL(LOADS_DELTA,0)) LOADS,
-SUM(NVL(INVALIDATIONS_DELTA,0)) INVALIDATIONS,
-SUM(NVL(PHYSICAL_READ_REQUESTS_DELTA,0)) PHYSICAL_READ_REQUESTS,
-SUM(NVL(PHYSICAL_READ_BYTES_DELTA,0)) PHYSICAL_READ_BYTES,
-SUM(NVL(PHYSICAL_WRITE_REQUESTS_DELTA,0)) PHYSICAL_WRITE_REQUESTS,
-SUM(NVL(PHYSICAL_WRITE_BYTES_DELTA,0)) PHYSICAL_WRITE_BYTES,
-SUM(NVL(IO_INTERCONNECT_BYTES_DELTA,0)) IO_INTERCONNECT_BYTES
-FROM cdb_hist_sqlstat
-WHERE dbid = &db_id_tr
-and instance_number = &inst_id_tr
-and snap_id between &start_sample_id_tr+1 and &finish_sample_id_tr
+SUM(NVL(DELTA_PARSE_CALLS,0)) PARSE_CALLS,
+SUM(NVL(DELTA_DISK_READS,0)) DISK_READS,
+SUM(NVL(DELTA_DIRECT_WRITES,0)) DIRECT_WRITES,
+SUM(NVL(DELTA_BUFFER_GETS,0)) BUFFER_GETS,
+SUM(NVL(DELTA_ROWS_PROCESSED,0)) ROWS_PROCESSED,
+SUM(NVL(DELTA_FETCH_COUNT,0)) FETCHES,
+SUM(NVL(DELTA_EXECUTION_COUNT,0)) EXECUTIONS,
+SUM(NVL(DELTA_PX_SERVERS_EXECUTIONS,0)) PX_SERVERS_EXECUTIONS,
+SUM(NVL(DELTA_END_OF_FETCH_COUNT,0)) END_OF_FETCH_COUNT,
+SUM(NVL(DELTA_CPU_TIME,0)) CPU_TIME,
+SUM(NVL(DELTA_ELAPSED_TIME,0)) ELAPSED_TIME,
+SUM(NVL(DELTA_APPLICATION_WAIT_TIME,0)) APPLICATION_WAIT_TIME,
+SUM(NVL(DELTA_CONCURRENCY_TIME,0)) CONCURRENCY_WAIT_TIME,
+SUM(NVL(DELTA_CLUSTER_WAIT_TIME,0)) CLUSTER_WAIT_TIME,
+SUM(NVL(DELTA_USER_IO_WAIT_TIME,0)) USER_IO_WAIT_TIME,
+SUM(NVL(DELTA_PLSQL_EXEC_TIME,0)) PLSQL_EXEC_TIME,
+SUM(NVL(DELTA_JAVA_EXEC_TIME,0)) JAVA_EXEC_TIME,
+SUM(NVL(DELTA_SORTS,0)) SORTS,
+SUM(NVL(DELTA_LOADS,0)) LOADS,
+SUM(NVL(DELTA_INVALIDATIONS,0)) INVALIDATIONS,
+SUM(NVL(DELTA_PHYSICAL_READ_REQUESTS,0)) PHYSICAL_READ_REQUESTS,
+SUM(NVL(DELTA_PHYSICAL_READ_BYTES,0)) PHYSICAL_READ_BYTES,
+SUM(NVL(DELTA_PHYSICAL_WRITE_REQUESTS,0)) PHYSICAL_WRITE_REQUESTS,
+SUM(NVL(DELTA_PHYSICAL_WRITE_BYTES,0)) PHYSICAL_WRITE_BYTES,
+SUM(NVL(DELTA_IO_INTERCONNECT_BYTES,0)) IO_INTERCONNECT_BYTES
+FROM XDBMONITORING.TBL_SQLSTATS
+WHERE sample_id between &start_sample_id_tr+1 and &finish_sample_id_tr
 GROUP BY SQL_ID,PLAN_HASH_VALUE)
 WHERE ABS(ELAPSED_TIME)+ABS(BUFFER_GETS)+ABS(DISK_READS)+ABS(EXECUTIONS)>0)
 WHERE ((PARSE_CALLS_R<=20 AND PARSE_CALLS_T>0) OR
@@ -1622,11 +1565,11 @@ WHERE ((PARSE_CALLS_R<=20 AND PARSE_CALLS_T>0) OR
 select 'sqlid2' sql_id, 'sql_type2' sql_type from dual)
 , x as (SELECT case when s.sql_id is not null then s.sql_type
        else 'Unclassified' end sql_type
-, tr.sql_id_t, t.sql_text
+, tr.sql_id_t, t.sql_fulltext
 FROM tr
 LEFT JOIN s  ON tr.sql_id_t=s.sql_id
-INNER JOIN cdb_hist_sqltext t ON t.dbid = &db_id_tr and tr.sql_id_t=t.sql_id )
-SELECT '+ "'||sql_id_t||'!@#!'||sql_type||'!@#!'||REPLACE(REPLACE(REPLACE(TO_CHAR(substr(sql_text,1,2000)),chr(10),' '),chr(13),' '),'"','')||'\n"' from x ;
+INNER JOIN XDBMONITORING.TBL_SQL_TEXT t ON tr.sql_id_t=t.sql_id )
+SELECT '+ "'||sql_id_t||'!@#!'||sql_type||'!@#!'||REPLACE(REPLACE(REPLACE(TO_CHAR(substr(sql_fulltext,1,2000)),chr(10),' '),chr(13),' '),'"','')||'\n"' from x ;
 prompt ;;
 prompt  var csvSysStat = "STATISTIC#!@#!NAME!@#!CLASS!@#!UNIT!@#!SYSSTAT_BL!@#!SYSSTAT_TR\n"
 WITH stat_type as (SELECT 'OS CPU Qt wait time' stat_name, 'time' stat_unit FROM DUAL UNION
@@ -1803,8 +1746,8 @@ SELECT 16 class_id, 'OS' class_name FROM DUAL UNION
 SELECT 32 class_id, 'RAC' class_name FROM DUAL UNION
 SELECT 62 class_id, 'SQL' class_name FROM DUAL UNION
 SELECT 128 class_id, 'Debug' class_name FROM DUAL)
-, bl as (select /*+ materialize */ stat_name name, max(value) - min(value) value from cdb_hist_sysstat where dbid = &db_id_br and instance_number = &inst_id_br and snap_id between &start_sample_id_br and &finish_sample_id_br group by stat_name)
-, tr as (select /*+ materialize */ stat_name name, max(value) - min(value) value from cdb_hist_sysstat where dbid = &db_id_tr and instance_number = &inst_id_tr and snap_id between &start_sample_id_tr and &finish_sample_id_tr group by stat_name)
+, bl as (select /*+ materialize */ name, max(value) - min(value) value from XDBMONITORING.tbl_sysstat where sample_id between &start_sample_id_br and &finish_sample_id_br group by name)
+, tr as (select /*+ materialize */ name, max(value) - min(value) value from XDBMONITORING.tbl_sysstat where sample_id between &start_sample_id_tr and &finish_sample_id_tr group by name)
 select '+ "'||ss.statistic#||'!@#!'||ss.name||'!@#!'|| NVL(sc.class_name,'Other')||'!@#!'||NVL(st.stat_unit,'event')||'!@#!'|| NVL(bl.value,0)||'!@#!'||NVL(tr.value,0)||'\n"'
 from v$sysstat ss
 left join stat_type st ON ss.name = st.stat_name
@@ -1833,7 +1776,6 @@ prompt  dataDbTime.forEach(function(d) {
 prompt  d.date = timeFormatDMY(d.date);;
 prompt  d.value = +d.value;;
 prompt  });;
-prompt
 prompt
 prompt  var dataDbTimeBr = d3.csvParse(csvDbTimeBr);;
 prompt  dataDbTimeBr.forEach(function(d) {
@@ -2017,7 +1959,7 @@ prompt  , "PHYSICAL_WRITE_BYTES":["RANK","SQL_ID","SQL_TYPE","PHYSICAL_WRITE_BYT
 prompt  , "IO_INTERCONNECT_BYTES":["RANK","SQL_ID","SQL_TYPE","IO_INTERCONNECT_BYTES_S","PLAN_HASH_VALUE","IO_INTERCONNECT_BYTES_B","IO_INTERCONNECT_BYTES_T","IO_INTERCONNECT_BYTES_D","EXECUTIONS_B","EXECUTIONS_T","EXECUTIONS_D","EXECUTIONS_PC","ELAPSED_TIME_T","CPU_TIME_T","USER_IO_WAIT_TIME_T","CONCURRENCY_WAIT_TIME_T","APPLICATION_WAIT_TIME_T","CLUSTER_WAIT_TIME_T","OTHER_WAIT_TIME_T","BUFFER_GETS_T","ROWS_PROCESSED_T","DISK_READS_T","IO_INTERCONNECT_BYTES_T"]
 prompt  , "OTHER_WAIT_TIME":["RANK","SQL_ID","SQL_TYPE","OTHER_WAIT_TIME_S","PLAN_HASH_VALUE","OTHER_WAIT_TIME_B","OTHER_WAIT_TIME_T","OTHER_WAIT_TIME_D","EXECUTIONS_B","EXECUTIONS_T","EXECUTIONS_D","EXECUTIONS_PC","ELAPSED_TIME_T","CPU_TIME_T","USER_IO_WAIT_TIME_T","CONCURRENCY_WAIT_TIME_T","APPLICATION_WAIT_TIME_T","CLUSTER_WAIT_TIME_T","OTHER_WAIT_TIME_T","BUFFER_GETS_T","ROWS_PROCESSED_T","DISK_READS_T","IO_INTERCONNECT_BYTES_T"]
 prompt  , "SYS_TIME_MODEL":["RANK","STAT_NAME","SYS_TIME_MODEL_BR","SYS_TIME_MODEL_TR","SYS_TIME_MODEL_D","SYS_TIME_MODEL_PC"]
-prompt  , "DB_SUMMARY":["RUNID","DBNAME","CON_DBID","DB_UNIQUE_NAME","CDB","INSTANCE_NAME","INSTANCE_NUMBER","HOST_NAME","VERSION","EDITION","STARTUP_TIME","DATABASE_TYPE","CON_DB_ID","CON_NAME","OPEN_TIME","START_SNAP","END_SNAP","START_TIME","END_TIME"]
+prompt  , "DB_SUMMARY":["RUNID","DBID","DBNAME","CREATED","LOG_MODE","PLATFORM_NAME","INSTANCE_NUMBER","INSTANCE_NAME","HOST_NAME","VERSION","STARTUP_TIME","STATUS","START_SNAP","END_SNAP","START_TIME","END_TIME"]
 prompt  , "SQL_TEXT":["SQL_ID", "SQL_TYPE", "SQL_TEXT"]
 prompt  , "SYS_STAT":["STATISTIC#", "NAME", "CLASS","UNIT","SYSSTAT_BL","SYSSTAT_TR","SYSSTAT_DIFF","SYSSTAT_PC"]
 prompt  };;
@@ -2051,7 +1993,7 @@ prompt  , "PHYSICAL_WRITE_BYTES":["#","SQL_ID","SQL TYPE","%","SQL PLAN","PHYSIC
 prompt  , "IO_INTERCONNECT_BYTES":["#","SQL_ID","SQL TYPE","%","SQL PLAN","IO INTERCONNECT BYTES","EXECUTIONS","TIME DISTRIBUTION","GETS","ROWS","READS","IO BYTES"]
 prompt  , "OTHER_WAIT_TIME":["#","SQL_ID","SQL TYPE","%","SQL PLAN","OTHER WAIT TIME","EXECUTIONS","TIME DISTRIBUTION","GETS","ROWS","READS","IO BYTES"]
 prompt  , "SYS_TIME_MODEL":["#","STATISTIC NAME","B","T","Δ","%Δ"]
-prompt  , "DB_SUMMARY":["RUNID","DBNAME","CON DBID","DB UNIQUE NAME","CDB","INST NAME","INSTANCE #","HOST NAME","VERSION","EDITION","STARTUP TIME","DB TYPE","CON DB ID","CON NAME","OPEN TIME","START SNAP","END SNAP","START TIME","END TIME"]
+prompt  , "DB_SUMMARY":["TEST NAME","DBID","DBNAME","CREATED","LOG MODE","PLATFORM NAME","INSTANCE NUMBER","INSTANCE NAME","HOST NAME","VERSION","STARTUP TIME","STATUS","START SNAP","END SNAP","START TIME","END TIME"]
 prompt  , "SQL_TEXT":["SQL_ID", "SQL TYPE", "SQL_TEXT (First 2000 characters)"]
 prompt  , "SYS_STAT":["#", "STATISTIC NAME", "CLASS","UNIT","B","T", "Δ", "%Δ"]
 prompt  };;
