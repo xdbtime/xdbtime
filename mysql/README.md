@@ -44,7 +44,7 @@ Setup MySQL Shell to be able to generate xdbtime reports.
 2. Create `init.d` folder for MySQL Shell report if it does not exist:
 
 ```
-$ mdkir -p ~/.mysqlsh/init.d
+$ mkdir -p ~/.mysqlsh/init.d
 ```
 
 3. Go to `xdbtime/mysql/init.d` folder:
