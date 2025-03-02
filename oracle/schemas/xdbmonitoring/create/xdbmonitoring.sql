@@ -1,20 +1,23 @@
 /*
-    Copyright 2016-2022 Taras Guliak XDBTIME (PRO)
+    Copyright 2016-2025 Taras Guliak XDBTIME (PRO)
     All rights reserved.
-    Version: 2022.01
+    Version: 2025.02
     
     XDBMONITORING schema contains tables, stored procedures and jobs 
 		to collect performance metrics from the performance views.
 
 */
 
+DEFINE p_db_name = 'db_name'; 			-- example: 'ent-ora-perf'
+DEFINE p_app_name = 'app_name'; 		-- example: 'Entitlements'
+DEFINE p_data_set = 'data_set'; 		-- example: 'Corp 30k LE 30U 60Arr Retail 100k LE 1U 2Arr'
+DEFINE p_description = 'description'; 	-- example: 'Release testing'
+
 -- DROP USER xdbmonitoring CASCADE;
 
-CREATE USER xdbmonitoring IDENTIFIED BY XDBMONITORING DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS;
+CREATE USER xdbmonitoring IDENTIFIED BY mypassword DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS;
 
 GRANT CONNECT, CREATE SESSION, CREATE TABLE, CREATE SEQUENCE, CREATE PROCEDURE, CREATE JOB, CREATE DATABASE LINK TO xdbmonitoring;
-
---GRANT SELECT_CATALOG_ROLE TO XDBMONITORING;
 
 GRANT EXECUTE ON SYS.DEFAULT_JOB_CLASS TO xdbmonitoring;
 
@@ -41,11 +44,11 @@ INSERT INTO xdbmonitoring.tbl_db_info
 ) 
 VALUES 
 (
-	'db-name',
-	'app-name',
-	'app-version',
-	'app-dataset',
-	null
+	'&p_db_name',
+	'&p_app_name',
+	null,
+	'&p_data_set',
+	'&p_description'
 );
 
 CREATE TABLE xdbmonitoring.tbl_ash
@@ -1173,6 +1176,7 @@ job_name           =>  'XDBMONITORING.ASH10SEC',
 job_type           =>  'STORED_PROCEDURE',
 job_action         =>  'XDBMONITORING.PR_ASH_CAPTURE',
 repeat_interval    =>  'FREQ=SECONDLY;INTERVAL=10', /* every 10 seconds */
+start_date         =>  TO_DATE('01-JAN-22 00:00:00','DD-MON-YY HH24:MI:SS'),
 auto_drop          =>   TRUE,
 enabled            =>   TRUE,
 job_class          =>  'DEFAULT_JOB_CLASS',
@@ -1180,12 +1184,15 @@ comments           =>  'ASH sample 10 sec');
 END;
 /
 
+
+-- 5 minute snapshots are created by default. this value can be adjusted
 BEGIN
 DBMS_SCHEDULER.CREATE_JOB (
 job_name           =>  'XDBMONITORING.SNAP5MIN',
 job_type           =>  'STORED_PROCEDURE',
 job_action         =>  'XDBMONITORING.PR_SNAP_CAPTURE',
 repeat_interval    =>  'FREQ=MINUTELY;INTERVAL=5', /* every 5 minutes */
+start_date         =>  TO_DATE('01-JAN-22 00:00:00','DD-MON-YY HH24:MI:SS'),
 auto_drop          =>   TRUE,
 enabled            =>   TRUE,
 job_class          =>  'DEFAULT_JOB_CLASS',
@@ -1196,7 +1203,7 @@ END;
 -- check job status
 -- SELECT job_name, enabled FROM DBA_SCHEDULER_JOBS where owner='XDBMONITORING';
 -- check dba_scheduler_job_run_details
--- select * from SYS.dba_scheduler_job_run_details where job_name='XDBMONITORING';
+-- select * from SYS.dba_scheduler_job_run_details where owner='XDBMONITORING';
 
 -- check created snapshots
 -- select * from XDBMONITORING.TBL_SNAPSHOT order by 1 desc;
