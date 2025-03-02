@@ -1,9 +1,9 @@
 /*
-    Copyright (c) 2016-2022 Taras Guliak XDBTIME
+    Copyright (c) 2016-2025 Taras Guliak XDBTIME
     All rights reserved.
-    Version: 2022.01
+    Version: 2025.02
     
-    Performance Period Comparison Report (based on XDBMONITORING schema for XE and SE editions without AWR pack)
+    Performance Period Comparison Report (based on XDBMONITORING schema for XE and SE editions without Diagnostic Package License (AWR))
 
 	Description: SQL script to generate Database Performance Period Comparison HTML report for 2 performance test periods
 	Database: Oracle 12c-19c Express and Standard Editions (for single instance only).
@@ -18,25 +18,40 @@
 
 	Open report in Google Chrome (the only browser currently supported)
  
-	How does it work: SQL file spools into HTML file (HTML, CSS, JS, D3). D3 Copyright 2010-2022 Mike Bostock https://github.com/d3/d3/blob/master/LICENSE
+	How does it work: SQL file spools into HTML file (HTML, CSS, JS, D3). D3 Copyright 2010-2023 Mike Bostock https://github.com/d3/d3/blob/master/LICENSE
  		You can use xdbmolistsnap.sql to list snapshots 
 
 	example: 
 		SQL> @xdbmocompare.sql
+
+		XDBTIME reports for Oracle (based on xdbmonitoring schema)
+		Copyright (c) 2016, 2025, XDBTIME Taras Guliak
+		Version: 2025.02
+
+		Performance Period Comparison Report
+
 		Enter parameters for Baseline
-		Baseline: Enter Start Snapshot ID: 1743
-		Baseline: Enter End Snapshot ID: 1755
+		Baseline: Enter Start Snapshot ID: 2
+		Baseline: Enter End Snapshot ID: 11
+
+
 		Enter parameters for Test Run
-		Test Run: Enter Start Snapshot ID: 1732
-		Test Run: Enter End Snapshot ID: 1740
+		Test Run: Enter Start Snapshot ID: 2
+		Test Run: Enter End Snapshot ID: 11
+
+
 		Baseline:
-		Range of samples: [1743,1755]
-		Range of time   : [04/01/2020 12:31,04/01/2020 13:31]
+		Range of samples: [2,11]
+		Range of time   : [03/02/2023 21:50,03/02/2023 22:35]
+
 		Test Run:
-		Range of samples: [1732,1740]
-		Range of time   : [04/01/2020 11:36,04/01/2020 12:16]
+		Range of samples: [2,11]
+		Range of time   : [03/02/2023 21:50,03/02/2023 22:35]
+
 		Report is running ...
-		Report is written to ./reports/xdbmo_compare_1434084074_FETZ1POD_1743to1755vs1732to1740.html
+
+
+		Report is written to ./reports/xdbmo_compare_1647552100_ORCL_2to11vs2to11.html
  	
 */
 
@@ -63,13 +78,22 @@ column start_sample_time_tr new_value start_sample_time_tr;
 column finish_sample_time_tr new_value finish_sample_time_tr;
 
 set termout on;
+prompt
+prompt XDBTIME reports for Oracle (based on xdbmonitoring schema)
+prompt Copyright (c) 2016, 2025, XDBTIME Taras Guliak
+prompt Version: 2025.02
+prompt
+prompt Performance Period Comparison Report
+prompt
 prompt Enter parameters for Baseline
 accept blstartsnap char prompt 'Baseline: Enter Start Snapshot ID: '
 accept blendsnap char prompt 'Baseline: Enter End Snapshot ID: '
-
+prompt
+prompt
 prompt Enter parameters for Test Run
 accept trstartsnap char prompt 'Test Run: Enter Start Snapshot ID: '
 accept trendsnap char prompt 'Test Run: Enter End Snapshot ID: '
+prompt
 set termout off;
 
 select TRIM(sample_id) start_sample_id_br from XDBMONITORING.tbl_snapshot where sample_id = &blstartsnap;
@@ -81,16 +105,20 @@ select TO_CHAR(sample_time,'DD/MM/YYYY HH24:MI') finish_sample_time_br from XDBM
 select TO_CHAR(sample_time,'DD/MM/YYYY HH24:MI') start_sample_time_tr from XDBMONITORING.tbl_snapshot where sample_id = &start_sample_id_tr;
 select TO_CHAR(sample_time,'DD/MM/YYYY HH24:MI') finish_sample_time_tr from XDBMONITORING.tbl_snapshot where sample_id = &finish_sample_id_tr;
 
-select './reports/'||'xdbmo_compare_'||'XDBT_'||to_char(dbid)||'_'||name||'_'||'&start_sample_id_br'||'to'||'&finish_sample_id_br'||'vs'||'&start_sample_id_tr'||'to'||'&finish_sample_id_tr'||'.html' file_name from v$database;
+select './reports/'||'xdbmo_compare_'||to_char(dbid)||'_'||name||'_'||'&start_sample_id_br'||'to'||'&finish_sample_id_br'||'vs'||'&start_sample_id_tr'||'to'||'&finish_sample_id_tr'||'.html' file_name from v$database;
 
 set termout on;
+prompt
 prompt Baseline:
 prompt Range of samples: [&start_sample_id_br,&finish_sample_id_br]
 prompt Range of time   : [&start_sample_time_br,&finish_sample_time_br]
+prompt
 prompt Test Run:
 prompt Range of samples: [&start_sample_id_tr,&finish_sample_id_tr]
 prompt Range of time   : [&start_sample_time_tr,&finish_sample_time_tr]
+prompt
 prompt Report is running ...
+prompt
 set termout off;
 spool &file_name;
 prompt  <!DOCTYPE html>
@@ -1151,8 +1179,8 @@ SUM(NVL(DELTA_IO_INTERCONNECT_BYTES,0)) IO_INTERCONNECT_BYTES
 FROM XDBMONITORING.TBL_SQLSTATS
 WHERE sample_id between &start_sample_id_br+1 and &finish_sample_id_br
 GROUP BY SQL_ID,PLAN_HASH_VALUE))
-, s as (select '520mkxqpf15q8' sql_id, 'dual_example' sql_type from dual union
-select 'sqlid2' sql_id, 'sql_type2' sql_type from dual)
+, s as (select '3883kfsmb5x5a' sql_id, 'ModuleA' sql_type from dual union
+select 'b33svtu2c336d' sql_id, 'ModuleB' sql_type from dual)
 , x as (SELECT case when s.sql_id is not null then s.sql_type
        when s.sql_id is null and br.sql_id_b is null then '(+) New'
        else 'Unclassified' end sql_type
@@ -1379,8 +1407,8 @@ FROM XDBMONITORING.TBL_SQLSTATS
 WHERE sample_id between &start_sample_id_br+1 and &finish_sample_id_br
 GROUP BY SQL_ID,PLAN_HASH_VALUE)
 WHERE ABS(ELAPSED_TIME)+ABS(BUFFER_GETS)+ABS(DISK_READS)+ABS(EXECUTIONS)>0)
-, s as (select '520mkxqpf15q8' sql_id, 'dual_example' sql_type from dual union
-select 'sqlid2' sql_id, 'sql_type2' sql_type from dual)
+, s as (select '3883kfsmb5x5a' sql_id, 'ModuleA' sql_type from dual union
+select 'b33svtu2c336d' sql_id, 'ModuleB' sql_type from dual)
 , x as (select
 case when br.sql_id_b is null then '0: New (+)'
        when tr.sql_id_t is null then '0: Aged out (-)'
@@ -1561,8 +1589,8 @@ WHERE ((PARSE_CALLS_R<=20 AND PARSE_CALLS_T>0) OR
 (PHYSICAL_WRITE_REQUESTS_R<=20 AND PHYSICAL_WRITE_REQUESTS_T>0) OR
 (PHYSICAL_WRITE_BYTES_R<=20 AND PHYSICAL_WRITE_BYTES_T>0) OR
 (IO_INTERCONNECT_BYTES_R<=20 AND IO_INTERCONNECT_BYTES_T>0)))
-, s as (select '520mkxqpf15q8' sql_id, 'dual_example' sql_type from dual union
-select 'sqlid2' sql_id, 'sql_type2' sql_type from dual)
+, s as (select '3883kfsmb5x5a' sql_id, 'ModuleA' sql_type from dual union
+select 'b33svtu2c336d' sql_id, 'ModuleB' sql_type from dual)
 , x as (SELECT case when s.sql_id is not null then s.sql_type
        else 'Unclassified' end sql_type
 , tr.sql_id_t, t.sql_fulltext
@@ -1923,7 +1951,7 @@ prompt
 prompt  var timeFormatArray= ["CPU_TIME_T","ELAPSED_TIME_T","APPLICATION_WAIT_TIME_T","CONCURRENCY_WAIT_TIME_T","CLUSTER_WAIT_TIME_T","USER_IO_WAIT_TIME_T","PLSQL_EXEC_TIME_T","JAVA_EXEC_TIME_T","CPU_TIME_B","ELAPSED_TIME_B","APPLICATION_WAIT_TIME_B","CONCURRENCY_WAIT_TIME_B","CLUSTER_WAIT_TIME_B","USER_IO_WAIT_TIME_B","PLSQL_EXEC_TIME_B","JAVA_EXEC_TIME_B","SYS_TIME_MODEL_BR","SYS_TIME_MODEL_TR","SYS_TIME_MODEL_D","CPU_TIME_D","ELAPSED_TIME_D","APPLICATION_WAIT_TIME_D"
 prompt  ,"CONCURRENCY_WAIT_TIME_D","CLUSTER_WAIT_TIME_D","USER_IO_WAIT_TIME_D","PLSQL_EXEC_TIME_D","JAVA_EXEC_TIME_D","ELAPSED_TIME_BA","ELAPSED_TIME_TA","CPU_TIME_BA","CPU_TIME_TA"];;
 prompt  var execFormatArray = ["PARSE_CALLS_T","DISK_READS_T","DIRECT_WRITES_T","BUFFER_GETS_T","ROWS_PROCESSED_T","FETCHES_T","EXECUTIONS_T","PX_SERVERS_EXECUTIONS_T","END_OF_FETCH_COUNT_T","SORTS_T","LOADS_T","INVALIDATIONS_T","PHYSICAL_READ_REQUESTS_T","PHYSICAL_READ_BYTES_T","PHYSICAL_WRITE_REQUESTS_T","PHYSICAL_WRITE_BYTES_T","IO_INTERCONNECT_BYTES_T","PARSE_CALLS_B","DISK_READS_B","DIRECT_WRITES_B","BUFFER_GETS_B","ROWS_PROCESSED_B","FETCHES_B","EXECUTIONS_B","PX_SERVERS_EXECUTIONS_B","END_OF_FETCH_COUNT_B","SORTS_B","LOADS_B","INVALIDATIONS_B","PHYSICAL_READ_REQUESTS_B","PHYSICAL_READ_BYTES_B","PHYSICAL_WRITE_REQUESTS_B","PHYSICAL_WRITE_BYTES_B","IO_INTERCONNECT_BYTES_B","SYSSTAT_BL","SYSSTAT_TR","SYSSTAT_DIFF","PARSE_CALLS_D","DISK_READS_D","DIRECT_WRITES_D","BUFFER_GETS_D","ROWS_PROCESSED_D","FETCHES_D","EXECUTIONS_D","PX_SERVERS_EXECUTIONS_D","END_OF_FETCH_COUNT_D","SORTS_D","LOADS_D","INVALIDATIONS_D","PHYSICAL_READ_REQUESTS_D","PHYSICAL_READ_BYTES_D","PHYSICAL_WRITE_REQUESTS_D","PHYSICAL_WRITE_BYTES_D","IO_INTERCONNECT_BYTES_D","BUFFER_GETS_BA","BUFFER_GETS_TA","ROWS_PROCESSED_BA","ROWS_PROCESSED_TA"];;
-prompt  var percentFormatArray = ["PARSE_CALLS_S","DISK_READS_S","DIRECT_WRITES_S","BUFFER_GETS_S","ROWS_PROCESSED_S","FETCHES_S","EXECUTIONS_S","PX_SERVERS_EXECUTIONS_S","END_OF_FETCH_COUNT_S","CPU_TIME_S","ELAPSED_TIME_S","APPLICATION_WAIT_TIME_S","CONCURRENCY_WAIT_TIME_S","CLUSTER_WAIT_TIME_S","USER_IO_WAIT_TIME_S","PLSQL_EXEC_TIME_S","JAVA_EXEC_TIME_S","OTHER_WAIT_TIME_S","SORTS_S","LOADS_S","INVALIDATIONS_S","PHYSICAL_READ_REQUESTS_S","PHYSICAL_READ_BYTES_S","PHYSICAL_WRITE_REQUESTS_S","PHYSICAL_WRITE_BYTES_S","IO_INTERCONprompt  ECT_BYTES_S","EXECUTIONS_PC","SYSSTAT_PC","SYS_TIME_MODEL_PC"];;
+prompt  var percentFormatArray = ["PARSE_CALLS_S","DISK_READS_S","DIRECT_WRITES_S","BUFFER_GETS_S","ROWS_PROCESSED_S","FETCHES_S","EXECUTIONS_S","PX_SERVERS_EXECUTIONS_S","END_OF_FETCH_COUNT_S","CPU_TIME_S","ELAPSED_TIME_S","APPLICATION_WAIT_TIME_S","CONCURRENCY_WAIT_TIME_S","CLUSTER_WAIT_TIME_S","USER_IO_WAIT_TIME_S","PLSQL_EXEC_TIME_S","JAVA_EXEC_TIME_S","OTHER_WAIT_TIME_S","SORTS_S","LOADS_S","INVALIDATIONS_S","PHYSICAL_READ_REQUESTS_S","PHYSICAL_READ_BYTES_S","PHYSICAL_WRITE_REQUESTS_S","PHYSICAL_WRITE_BYTES_S","IO_INTERCONECT_BYTES_S","EXECUTIONS_PC","SYSSTAT_PC","SYS_TIME_MODEL_PC"];;
 prompt
 prompt  var dataSqlStatsTable = d3.csvParse(csvSqlStatsTable);;
 prompt  dataSqlStatsTable.forEach(function(d) {d.RANK = +d.RANK});;
@@ -2308,7 +2336,9 @@ prompt
 prompt  </script>
 spool off;
 set termout on;
+prompt
 prompt Report is written to &file_name.
+prompt
 set termout off;
 clear columns sql;
 ttitle off;
