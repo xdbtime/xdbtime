@@ -1,5 +1,5 @@
 <!-- 
-    Copyright 2016-2025 Taras Guliak XDBTIME 
+    Copyright 2016-2025 Taras Guliak XDBTIME
     All rights reserved.
 
     ========================================
@@ -166,7 +166,7 @@
     <div class="main-wrapper" id="main-wrapper">
 
 
-        <h1>Database Performance Report - MySQL</h1>
+        <h1>Database Performance Comparison Report - MySQL</h1>
         <div id="chart1"> </div>
         <main>
             <h2>
@@ -183,18 +183,6 @@
             </div>
             <h2>
                 <button aria-expanded="false">
-                    File Summary
-                    <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
-                        <rect class="vert" height="8" width="2" y="1" x="4" />
-                        <rect height="2" width="8" y="4" x="1" />
-                    </svg>
-                </button>
-            </h2>
-            <div id="chartFileSummary" hidden>
-                <p>File Summary tables are based on file_summary_by_event_name view </p>
-            </div>
-            <h2>
-                <button aria-expanded="false">
                     Waits Summary
                     <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
                         <rect class="vert" height="8" width="2" y="1" x="4" />
@@ -203,6 +191,18 @@
                 </button>
             </h2>
             <div id="chartWaitsSummary" hidden>
+                <p>Waits Summary charts are based on events_waits_summary_global_by_event_name view </p>
+            </div>
+            <h2>
+                <button aria-expanded="false">
+                    Waits TimeSeries
+                    <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
+                        <rect class="vert" height="8" width="2" y="1" x="4" />
+                        <rect height="2" width="8" y="4" x="1" />
+                    </svg>
+                </button>
+            </h2>
+            <div id="chartWaitsTimeSeries" hidden>
                 <p>Waits Summary charts are based on events_waits_summary_global_by_event_name view </p>
             </div>
             <h2>
@@ -231,6 +231,18 @@
             </div>
             <h2>
                 <button aria-expanded="false">
+                    Statements TimeSeries
+                    <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
+                        <rect class="vert" height="8" width="2" y="1" x="4" />
+                        <rect height="2" width="8" y="4" x="1" />
+                    </svg>
+                </button>
+            </h2>
+            <div id="chartStatementsTimeSeries" hidden>
+                <p>Statements Summary charts are based on events_statements_summary_global_by_event_name view </p>
+            </div>
+            <h2>
+                <button aria-expanded="false">
                     SQL Statistics Charts
                     <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
                         <rect class="vert" height="8" width="2" y="1" x="4" />
@@ -239,7 +251,8 @@
                 </button>
             </h2>
             <div id="chart5" hidden>
-                <p>SQL Statistics charts are based on events_statements_summary_by_digest. SQL statistics are grouped by DIGEST and SCHEMA_NAME. </p>
+                <p>SQL Statistics charts are based on events_statements_summary_by_digest. SQL statistics are grouped by DIGEST. SQL classification is based on DIGEST. There are 3 default classes: Aged Out, New
+                    and Unclassified. </p>
             </div>
             <h2>
                 <button aria-expanded="false">
@@ -251,7 +264,9 @@
                 </button>
             </h2>
             <div id="chart6" hidden>
-                <p>SQL Statistics charts are based on events_statements_summary_by_digest. SQL statistics are grouped by DIGEST and SCHEMA_NAME.</p>
+                <p>SQL Statistics charts are based on events_statements_summary_by_digest. SQL statistics are grouped by DIGEST. 
+                    SQL classification is based on DIGEST. There are 3 default classes: Aged Out, New and
+                    Unclassified. </p>
             </div>
             <h2>
                 <button aria-expanded="false">
@@ -305,6 +320,157 @@
             target.hidden = expanded;
         }
     });
+
+    var totalStmtSql = 0;
+    var totalStmtCom = 0;
+    var totalStmtSp = 0;
+    var totalStmtScheduler = 0;
+
+    var stmtTsParse = function (startTime, endTime, stmtTsData) {
+
+        var stmtTsArray = [];
+
+        if (stmtTsData.length > 0) {
+
+            var i1 = 0;
+
+            var w1 = 0;
+            var w2 = 0;
+            var w3 = 0;
+            var w4 = 0;
+
+            var myObj = {
+                date: startTime
+                , 'com': w1
+                , 'scheduler': w2
+                , 'sp': w3
+                , 'sql': w4
+                , total: w1 + w2 + w3 + w4
+            }
+            stmtTsArray.push(myObj);
+
+            totalStmtSql = 0;
+            totalStmtCom = 0;
+            totalStmtSp = 0;
+            totalStmtScheduler = 0;
+
+            startTime = stmtTsData[i1].date;
+
+            while ((startTime <= endTime) && (stmtTsData.length > i1)) {
+                while ((stmtTsData.length > i1) && (stmtTsData[i1].date.getTime() === startTime.getTime())) {
+                    switch (stmtTsData[i1].key) {
+                        case "com": w1 = stmtTsData[i1].value; break;
+                        case "scheduler": w2 = stmtTsData[i1].value; break;
+                        case "sp": w3 = stmtTsData[i1].value; break;
+                        case "sql": w4 = stmtTsData[i1].value; break;
+                    }
+                    i1 = i1 + 1;
+                }
+                var myObj = {
+                    date: startTime
+                    , 'com': w1
+                    , 'scheduler': w2
+                    , 'sp': w3
+                    , 'sql': w4
+                    , total: w1 + w2 + w3 + w4
+                }
+                stmtTsArray.push(myObj);
+
+                totalStmtSql += w1;
+                totalStmtCom += w2;
+                totalStmtSp += w3;
+                totalStmtScheduler += w4;
+
+                w1 = 0;
+                w2 = 0;
+                w3 = 0;
+                w4 = 0;
+
+
+
+                if (stmtTsData.length > i1) {
+                    startTime = stmtTsData[i1].date;
+                }
+
+            }
+
+        }
+        return stmtTsArray
+    }
+
+    var waitsTsParse = function (startTime, endTime, waitsTsInputData) {
+
+        var waitsTsArray = [];
+
+        if (waitsTsInputData.length > 0) {
+
+            var i1 = 0;
+
+            var w1 = 0;
+            var w2 = 0;
+            var w3 = 0;
+            var w4 = 0;
+            var w5 = 0;
+            var w6 = 0;
+            var w7 = 0;
+            var w8 = 0;
+            var w9 = 0;
+            var w10 = 0;
+
+            startTime = waitsTsInputData[i1].date;
+
+            while ((startTime <= endTime) && (waitsTsInputData.length > i1)) {
+                while ((waitsTsInputData.length > i1) && (waitsTsInputData[i1].date.getTime() === startTime.getTime())) {
+                    switch (waitsTsInputData[i1].key) {
+                        case "io/file": w1 = waitsTsInputData[i1].value; break;
+                        case "io/socket": w2 = waitsTsInputData[i1].value; break;
+                        case "io/table": w3 = waitsTsInputData[i1].value; break;
+                        case "io/aurora_redo_log_flus": w4 = waitsTsInputData[i1].value; break;
+                        case "lock/metadata": w5 = waitsTsInputData[i1].value; break;
+                        case "lock/table": w6 = waitsTsInputData[i1].value; break;
+                        case "synch/cond": w7 = waitsTsInputData[i1].value; break;
+                        case "synch/mutex": w8 = waitsTsInputData[i1].value; break;
+                        case "synch/rwlock": w9 = waitsTsInputData[i1].value; break;
+                        case "synch/sxlock": w10 = waitsTsInputData[i1].value; break;
+                    }
+                    i1 = i1 + 1;
+                }
+                var myObj = {
+                    date: startTime
+                    , 'io/file': w1
+                    , 'io/socket': w2
+                    , 'io/table': w3
+                    , 'io/aurora_redo_log_flus': w4
+                    , 'lock/metadata': w5
+                    , 'lock/table': w6
+                    , 'synch/cond': w7
+                    , 'synch/mutex': w8
+                    , 'synch/rwlock': w9
+                    , 'synch/sxlock': w10
+                    , total: w1 + w2 + w3 + w4 + w5 + w6 + w7 + w8 + w9 + w10
+                }
+                waitsTsArray.push(myObj);
+
+                var w1 = 0;
+                var w2 = 0;
+                var w3 = 0;
+                var w4 = 0;
+                var w5 = 0;
+                var w6 = 0;
+                var w7 = 0;
+                var w8 = 0;
+                var w9 = 0;
+                var w10 = 0;
+
+                if (waitsTsInputData.length > i1) {
+                    startTime = waitsTsInputData[i1].date;
+                }
+
+            }
+
+        }
+        return waitsTsArray
+        }
 
     var svgDbTimeDraw = function (svgWidth, svgHeight, inpArray, svgObjName, withLegend, chartTitle, chartSubTitle, minDate, maxDate, maxX, pKeys, pColors, pAxisName) {
         var margin = { top: 100, right: 100, bottom: 30, left: 40 },
@@ -492,7 +658,7 @@
             height = svgHeight - margin.top - margin.bottom;
 
         var x = d3.scaleBand()
-            .rangeRound([40, width - 215])
+            .rangeRound([0, width - 200])
             .paddingInner(0.05)
             .align(0.1);
         var y = d3.scaleLinear().rangeRound([height, 0]);
@@ -596,9 +762,22 @@
         var outputString = percentFormat(d3.sum(sqlStatsMySQL[statName], function (d) { return d[sqlStatsTableDetailsMySQL[statName]["colShare"]]; })) + " of " + sqlStatsTableDetailsMySQL[statName]["description"] + " is covered by TOP " +
             timeFormat(d3.max(sqlStatsMySQL[statName], function (d) { return d["RANK"]; })) + " SQLs found in Performance Schema. ";
 
-        outputString = outputString + sqlStatsTableDetailsMySQL[statName]["description"] + " (TOP " + timeFormat(d3.max(sqlStatsMySQL[statName], function (d) { return d["RANK"]; })) + " SQLs) consumed "
-            + outputFormat(sqlStatsTableDetailsMySQL[statName]["colDiff"], d3.sum(sqlStatsMySQL[statName], function (d) { return d[sqlStatsTableDetailsMySQL[statName]["colTestrun"]]; })) + " units.";
-        
+        if (d3.sum(sqlStatsMySQL[statName], function (d) { return d[sqlStatsTableDetailsMySQL[statName]["colDiff"]]; }) > 0) {
+            outputString = outputString + sqlStatsTableDetailsMySQL[statName]["description"] + " (TOP " + timeFormat(d3.max(sqlStatsMySQL[statName], function (d) { return d["RANK"]; })) + " SQLs) has been increased by "
+                + outputFormat(sqlStatsTableDetailsMySQL[statName]["colDiff"], d3.sum(sqlStatsMySQL[statName], function (d) { return d[sqlStatsTableDetailsMySQL[statName]["colDiff"]]; })) + " units (from "
+                + outputFormat(sqlStatsTableDetailsMySQL[statName]["colDiff"], d3.sum(sqlStatsMySQL[statName], function (d) { return d[sqlStatsTableDetailsMySQL[statName]["colBaseline"]]; })) + " to "
+                + outputFormat(sqlStatsTableDetailsMySQL[statName]["colDiff"], d3.sum(sqlStatsMySQL[statName], function (d) { return d[sqlStatsTableDetailsMySQL[statName]["colTestrun"]]; })) + " ).";
+            return outputString;
+        }
+        else {
+            outputString = outputString + sqlStatsTableDetailsMySQL[statName]["description"] + " (TOP " + timeFormat(d3.max(sqlStatsMySQL[statName], function (d) { return d["RANK"]; })) + " SQLs) has been decreased by "
+                + outputFormat(sqlStatsTableDetailsMySQL[statName]["colDiff"], -1 * d3.sum(sqlStatsMySQL[statName], function (d) { return d[sqlStatsTableDetailsMySQL[statName]["colDiff"]]; })) + " units (from "
+                + outputFormat(sqlStatsTableDetailsMySQL[statName]["colDiff"], d3.sum(sqlStatsMySQL[statName], function (d) { return d[sqlStatsTableDetailsMySQL[statName]["colBaseline"]]; })) + " to "
+                + outputFormat(sqlStatsTableDetailsMySQL[statName]["colDiff"], d3.sum(sqlStatsMySQL[statName], function (d) { return d[sqlStatsTableDetailsMySQL[statName]["colTestrun"]]; })) + " ).";
+            return outputString;
+        }
+
+
         return outputString;
         
     }
@@ -706,15 +885,23 @@
         if (timeFormatArrayMySQL.includes(pcolumn)) { if (Math.abs(pvalue) > 999) { return execFormat(+pvalue); } else { return timeFormat(+pvalue); } };
         if (execFormatArrayMySQL.includes(pcolumn)) { if (Math.abs(pvalue) < 10) { return timeFormat(+pvalue); } else { return execFormat(+pvalue); } };
         if (percentFormatArrayMySQL.includes(pcolumn)) { return percentFormat(+pvalue); };
-        if (intervalFormatArrayMySQL.includes(pcolumn)) { return intervalFormat(+pvalue); };
         return pvalue;
     }
 
     function drawAllObjects(pScreenWidth) {
-        if (statementsSummaryGroupsMySQL["Wait Classes"][0]["total"]>0) svgBarChartDraw(400, 450, statementsSummaryGroupsMySQL["Wait Classes"], "#chart1", waitClassColors, "Statements Summary", "Seconds");
-        if (waitsSummaryGroupsMySQL["Wait Classes"][0]["total"]>0) svgBarChartDraw(400, 450, waitsSummaryGroupsMySQL["Wait Classes"], "#chart1", waitClassColors, "Waits Summary", "Seconds");
-        if (stagesSummaryGroupsMySQL["Wait Classes"][0]["total"]>0) svgBarChartDraw(400, 450, stagesSummaryGroupsMySQL["Wait Classes"], "#chart1", waitClassColors, "Stages Summary", "Seconds");
+        if ((statementsSummaryGroupsMySQL["Wait Classes"][0]["total"] + statementsSummaryGroupsMySQL["Wait Classes"][1]["total"])>0) svgBarChartDraw(400, 450, statementsSummaryGroupsMySQL["Wait Classes"], "#chart1", waitClassColors, "Statements Summary", "Seconds");
+        if ((waitsSummaryGroupsMySQL["Wait Classes"][0]["total"] + waitsSummaryGroupsMySQL["Wait Classes"][1]["total"])>0) svgBarChartDraw(400, 450, waitsSummaryGroupsMySQL["Wait Classes"], "#chart1", waitClassColors, "Waits Summary", "Seconds");
+        if ((stagesSummaryGroupsMySQL["Wait Classes"][0]["total"] + stagesSummaryGroupsMySQL["Wait Classes"][1]["total"])>0) svgBarChartDraw(400, 450, stagesSummaryGroupsMySQL["Wait Classes"], "#chart1", waitClassColors, "Stages Summary", "Seconds");
         
+        var maxStatementsTSAxis = Math.max(d3.max(stmtTsArrayBr, function(d){return d.total;}), d3.max(stmtTsArrayTr, function(d){return d.total;}));
+
+        svgDbTimeDraw(pScreenWidth,380,stmtTsArrayBr,"#chartStatementsTimeSeries",1,"Baseline", startTimeBr.toLocaleString('en-us', date_output), startTimeBr,finishTimeBr,maxStatementsTSAxis, stmtKeys, cat20Colors,"Seconds");
+        svgDbTimeDraw(pScreenWidth,380,stmtTsArrayTr,"#chartStatementsTimeSeries",1,"Test Run", startTimeTr.toLocaleString('en-us', date_output), startTimeTr,finishTimeTr,maxStatementsTSAxis, stmtKeys, cat20Colors,"Seconds");
+        
+        var maxWaitsTSAxis = Math.max(d3.max(waitsTsArrayBr, function(d){return d.total;}), d3.max(waitsTsArrayTr, function(d){return d.total;}));
+
+        svgDbTimeDraw(pScreenWidth,380,waitsTsArrayBr,"#chartWaitsTimeSeries",1,"Baseline", startTimeBr.toLocaleString('en-us', date_output), startTimeBr,finishTimeBr,maxWaitsTSAxis, waitsKeys, waitClassColors,"Seconds");
+        svgDbTimeDraw(pScreenWidth,380,waitsTsArrayTr,"#chartWaitsTimeSeries",1,"Test Run", startTimeTr.toLocaleString('en-us', date_output), startTimeTr,finishTimeTr,maxWaitsTSAxis, waitsKeys, waitClassColors,"Seconds");
 
         ["io/file", "io/socket", "io/table", "io/aurora_redo_log_flus", "lock/metadata", "lock/table", "synch/cond", "synch/mutex", "synch/rwlock", "synch/sxlock"].forEach(function (d) {
             if (waitsSummaryGroupsMySQL[d].columns) svgBarChartDraw(400, 450, waitsSummaryGroupsMySQL[d], "#chartWaitsSummary", cat20Colors, d, "Seconds");
@@ -748,15 +935,29 @@
 
         var dbSummaryTable = drawTable(sqlStatsMySQL["DB_SUMMARY"], sqlStatsColsMySQL["DB_SUMMARY"], sqlStatsColsHeader1MySQL["DB_SUMMARY"], sqlStatsColsHeader2MySQL["DB_SUMMARY"], sqlStatsTableDetailsMySQL["DB_SUMMARY"]["name"], "#chart1", "", "");
         
-        var globalStatusTable = drawTable(sqlStatsMySQL["GLOBAL_STATUS"], sqlStatsColsMySQL["GLOBAL_STATUS"], sqlStatsColsHeader1MySQL["GLOBAL_STATUS"], sqlStatsColsHeader2MySQL["GLOBAL_STATUS"], sqlStatsTableDetailsMySQL["GLOBAL_STATUS"]["name"], "#chartGlobalStatus", "", "");
+        var globalStatusTable = drawTable(sqlStatsMySQL["GLOBAL_STATUS"], sqlStatsColsMySQL["GLOBAL_STATUS"], sqlStatsColsHeader1MySQL["GLOBAL_STATUS"], sqlStatsColsHeader2MySQL["GLOBAL_STATUS"], sqlStatsTableDetailsMySQL["GLOBAL_STATUS"]["name"], "#chartGlobalStatus", "", tableDescriptionText);
 
         var sqlTextTable = drawTable(sqlStatsMySQL["SQL_TEXT"], sqlStatsColsMySQL["SQL_TEXT"], sqlStatsColsHeader1MySQL["SQL_TEXT"], sqlStatsColsHeader2MySQL["SQL_TEXT"], sqlStatsTableDetailsMySQL["SQL_TEXT"]["name"], "#chartSqlText", "", "");
 
-        var fileSummaryByEventTableMySQL = drawTable(sqlStatsMySQL["FILE_SUMMARY_EVENT"], sqlStatsColsMySQL["FILE_SUMMARY_EVENT"], sqlStatsColsHeader1MySQL["FILE_SUMMARY_EVENT"], sqlStatsColsHeader2MySQL["FILE_SUMMARY_EVENT"], sqlStatsTableDetailsMySQL["FILE_SUMMARY_EVENT"]["name"], "#chartFileSummary", "", tableDescriptionText);
+        sqlStatsTablesMySQL.forEach(function(x) {
+        if (sqlStatsMySQL[x].length > 0) {    
+            if (x == "COUNT_STAR") {
+                sqlStatsTablesMySQL[x].selectAll('td:nth-child(8)').style("background-color", function(d){if(+d.value > 0) {return colorInterpolateRed((+d.value)/getMaxDiffSqlStatMySQL(x)/2);} else {return colorInterpolateGreen((+d.value)/getMinDiffSqlStatMySQL(x)/2);};});
+            }
+            else
+            {
+                sqlStatsTablesMySQL[x].selectAll('td:nth-child(8)').style("background-color", function(d){if(+d.value > 0) {return colorInterpolateRed((+d.value)/getMaxDiffSqlStatMySQL(x)/2);} else {return colorInterpolateGreen((+d.value)/getMinDiffSqlStatMySQL(x)/2);};});
+                sqlStatsTablesMySQL[x].selectAll('td:nth-child(12)').style("background-color", function(d){return colorScale((+d.value))});
+            }
+        }
+        });
 
+        globalStatusTable.selectAll('td:nth-child(5)').style("background-color", function(d){return colorScale((+d.value))});
 
     }
 
+    var csvTopDigestType = "digest_type\n";
+    
     var csvWaitsSummaryMySQL = "wait_class,wait_event,tst_before,tst_after\n";
 
     var csvStagesSummaryMySQL = "wait_class,wait_event,tst_before,tst_after\n";
@@ -765,14 +966,20 @@
 
     var csvSqlStatsChartMySQL = "stat_name,sql_type,value_b,value_t\n";
 
-    var csvSqlStatsTableMySQL = "STATISTIC,SCHEMA_NAME,DIGEST,COUNT_STAR,SUM_TIMER_WAIT,MIN_TIMER_WAIT,AVG_TIMER_WAIT,MAX_TIMER_WAIT,SUM_LOCK_TIME,SUM_ERRORS,SUM_WARNINGS,SUM_ROWS_AFFECTED,SUM_ROWS_SENT,SUM_ROWS_EXAMINED,SUM_CREATED_TMP_DISK_TABLES,SUM_CREATED_TMP_TABLES,SUM_SELECT_FULL_JOIN,SUM_SELECT_FULL_RANGE_JOIN,SUM_SELECT_RANGE,SUM_SELECT_RANGE_CHECK,SUM_SELECT_SCAN,SUM_SORT_MERGE_PASSES,SUM_SORT_RANGE,SUM_SORT_ROWS,SUM_SORT_SCAN,SUM_NO_INDEX_USED,SUM_NO_GOOD_INDEX_USED\n";
+    var csvSqlStatsTableMySQL = "STATISTIC,SQL_TYPE,SCHEMA_NAME,DIGEST,COUNT_STAR_T,SUM_TIMER_WAIT_T,SUM_LOCK_TIME_T,SUM_ERRORS_T,SUM_WARNINGS_T,SUM_ROWS_AFFECTED_T,SUM_ROWS_SENT_T,SUM_ROWS_EXAMINED_T,SUM_CREATED_TMP_DISK_TABLES_T,SUM_CREATED_TMP_TABLES_T,SUM_SELECT_FULL_JOIN_T,SUM_SELECT_FULL_RANGE_JOIN_T,SUM_SELECT_RANGE_T,SUM_SELECT_RANGE_CHECK_T,SUM_SELECT_SCAN_T,SUM_SORT_MERGE_PASSES_T,SUM_SORT_RANGE_T,SUM_SORT_ROWS_T,SUM_SORT_SCAN_T,SUM_NO_INDEX_USED_T,SUM_NO_GOOD_INDEX_USED_T,SCHEMA_NAME_B,DIGEST_B,COUNT_STAR_B,SUM_TIMER_WAIT_B,SUM_LOCK_TIME_B,SUM_ERRORS_B,SUM_WARNINGS_B,SUM_ROWS_AFFECTED_B,SUM_ROWS_SENT_B,SUM_ROWS_EXAMINED_B,SUM_CREATED_TMP_DISK_TABLES_B,SUM_CREATED_TMP_TABLES_B,SUM_SELECT_FULL_JOIN_B,SUM_SELECT_FULL_RANGE_JOIN_B,SUM_SELECT_RANGE_B,SUM_SELECT_RANGE_CHECK_B,SUM_SELECT_SCAN_B,SUM_SORT_MERGE_PASSES_B,SUM_SORT_RANGE_B,SUM_SORT_ROWS_B,SUM_SORT_SCAN_B,SUM_NO_INDEX_USED_B,SUM_NO_GOOD_INDEX_USED_B\n";
 
     var csvFileSummaryByEventMySQL = "EVENT_NAME,COUNT_STAR,SUM_TIMER_WAIT,MIN_TIMER_WAIT,AVG_TIMER_WAIT,MAX_TIMER_WAIT,COUNT_READ,SUM_TIMER_READ,MIN_TIMER_READ,AVG_TIMER_READ,MAX_TIMER_READ,SUM_NUMBER_OF_BYTES_READ,COUNT_WRITE,SUM_TIMER_WRITE,MIN_TIMER_WRITE,AVG_TIMER_WRITE,MAX_TIMER_WRITE,SUM_NUMBER_OF_BYTES_WRITE,COUNT_MISC,SUM_TIMER_MISC,MIN_TIMER_MISC,AVG_TIMER_MISC,MAX_TIMER_MISC\n";
 
-    var csvDbSummary = "HOSTNAME,INNODBBUFFERPOOLSIZE,VERSION,VERSION_COMMENT,VERSION_OS,VERSION_MACHINE,UPTIME,REPORT_TIME\n";
+    var csvDbSummary = "PERIOD,START_SAMPLE_ID,FINISH_SAMPLE_ID,START_SAMPLE_TIME,FINISH_SAMPLE_TIME,DURATION\n";
 
-    var csvGlobalStatus = "VARIABLE_NAME,VARIABLE_VALUE\n";
+    var csvGlobalStatus = "VARIABLE_NAME,GLOBAL_STATUS_B,GLOBAL_STATUS_T\n";
     
-    var csvSQLText = "SCHEMA!@#!DIGEST!@#!DIGEST_TEXT\n";
+    var csvSQLText = "DIGEST!@#!DIGEST_TEXT\n";
 
-    
+    var csvStmtTsBr = "date,key,value\n";
+
+    var csvStmtTsTr = "date,key,value\n";
+
+    var csvWaitsTsBr = "date,key,value\n";
+
+    var csvWaitsTsTr = "date,key,value\n";
