@@ -1,0 +1,360 @@
+// Copyright 2016-2026 Taras Guliak XDBTIME Community Edition for SQL Server
+// All rights reserved.
+
+var timeFormatDMY = d3.timeParse("%Y-%m-%d");
+var timeFormatYMD_HM = d3.timeParse("%Y-%m-%d %H:%M");
+var timeFormatDMY_HMS = d3.timeParse("%d/%m/%Y %H:%M:%S");
+var tableDescriptionText = "B - baseline, T - test run, Δ - actual change, Δ% - percentage change, Time in Seconds";
+
+var date_output = {
+weekday: 'long',
+year: 'numeric',
+month: 'long',
+day: 'numeric'
+};
+
+var dbTimeKeys = ["CPU","Buffer IO","Other"];
+var dbTimeColors = d3.scaleOrdinal().range(["#96dfce","#65a1ac","#F0C080"]);
+
+var cat20Colors = d3.scaleOrdinal(d3.schemeCategory20);
+
+var pointA = "Period A";
+var pointB = "Period B";
+
+
+// SQL Stats tables
+
+var execFormat = d3.format(".2s");
+var timeFormat = d3.format(".3");
+var percentFormat = d3.format(".0%");
+
+var timeFormatArray= ["DURATION_T","CPU_TIME_T","WAIT_TIME_T","DURATION_B","CPU_TIME_B","WAIT_TIME_B","SYS_TIME_MODEL_BR","SYS_TIME_MODEL_TR","SYS_TIME_MODEL_D","DURATION_D","CPU_TIME_D","WAIT_TIME_D","DURATION_BA","DURATION_TA","CPU_TIME_BA","CPU_TIME_TA"];
+var execFormatArray = ["EXECUTIONS_T","EXECUTIONS_B","EXECUTIONS_D","LOGICAL_IO_READS_T","LOGICAL_IO_WRITES_T","PHYSICAL_IO_READS_T","DOP_T","QUERY_MAX_USED_MEMORY_T","ROW_COUNT_T","NUM_PHYSICAL_IO_READS_T","LOG_BYTES_USED_T","TEMPDB_SPACE_USED_T","PAGE_SERVER_IO_READS_T","LOGICAL_IO_READS_B","LOGICAL_IO_WRITES_B","PHYSICAL_IO_READS_B","DOP_B","QUERY_MAX_USED_MEMORY_B","ROW_COUNT_B","NUM_PHYSICAL_IO_READS_B","LOG_BYTES_USED_B","TEMPDB_SPACE_USED_B","PAGE_SERVER_IO_READS_B","SYSSTAT_BL","SYSSTAT_TR","SYSSTAT_DIFF","LOGICAL_IO_READS_D","LOGICAL_IO_WRITES_D","PHYSICAL_IO_READS_D","DOP_D","QUERY_MAX_USED_MEMORY_D","ROW_COUNT_D","NUM_PHYSICAL_IO_READS_D","LOG_BYTES_USED_D","TEMPDB_SPACE_USED_D","PAGE_SERVER_IO_READS_D"];
+var percentFormatArray = ["EXECUTIONS_S","DURATION_S","CPU_TIME_S","WAIT_TIME_S","LOGICAL_IO_READS_S","LOGICAL_IO_WRITES_S","PHYSICAL_IO_READS_S","DOP_S","QUERY_MAX_USED_MEMORY_S","ROW_COUNT_S","NUM_PHYSICAL_IO_READS_S","LOG_BYTES_USED_S","TEMPDB_SPACE_USED_S","PAGE_SERVER_IO_READS_S","EXECUTIONS_PC","SYSSTAT_PC","SYS_TIME_MODEL_PC"];
+
+var dataSqlStatsTable = d3.csvParse(csvSqlStatsTable);
+dataSqlStatsTable.forEach(function(d) {d.RANK = +d.RANK});
+
+
+
+var sqlStats = {"EXECUTIONS":[],"DURATION":[],"CPU_TIME":[],"WAIT_TIME":[],"LOGICAL_IO_READS":[],"LOGICAL_IO_WRITES":[],"PHYSICAL_IO_READS":[],"DOP":[],"QUERY_MAX_USED_MEMORY":[],"ROW_COUNT":[],"NUM_PHYSICAL_IO_READS":[],"LOG_BYTES_USED":[],"TEMPDB_SPACE_USED":[],"PAGE_SERVER_IO_READS":[],"DB_SUMMARY":[],"SQL_TEXT":[]};
+
+var sqlStatsCols = {
+"EXECUTIONS":["RANK","QUERY_ID","QUERY_HASH","PLAN_ID","SQL_TYPE","EXECUTIONS_S","EXECUTIONS_B","EXECUTIONS_T","EXECUTIONS_D","EXECUTIONS_PC","DURATION_T","CPU_TIME_T","WAIT_TIME_T","ROW_COUNT_T","LOGICAL_IO_READS_T","LOGICAL_IO_WRITES_T","PHYSICAL_IO_READS_T","NUM_PHYSICAL_IO_READS_T","DOP_T","QUERY_MAX_USED_MEMORY_T","LOG_BYTES_USED_T","TEMPDB_SPACE_USED_T"]
+, "DURATION":["RANK","QUERY_ID","QUERY_HASH","PLAN_ID","SQL_TYPE","DURATION_S","DURATION_B","DURATION_T","DURATION_D","EXECUTIONS_B","EXECUTIONS_T","EXECUTIONS_D","EXECUTIONS_PC","DURATION_T","CPU_TIME_T","WAIT_TIME_T","ROW_COUNT_T","LOGICAL_IO_READS_T","LOGICAL_IO_WRITES_T","PHYSICAL_IO_READS_T","NUM_PHYSICAL_IO_READS_T","DOP_T","QUERY_MAX_USED_MEMORY_T","LOG_BYTES_USED_T","TEMPDB_SPACE_USED_T","DURATION_BA","DURATION_TA"]
+, "CPU_TIME":["RANK","QUERY_ID","QUERY_HASH","PLAN_ID","SQL_TYPE","CPU_TIME_S","CPU_TIME_B","CPU_TIME_T","CPU_TIME_D","EXECUTIONS_B","EXECUTIONS_T","EXECUTIONS_D","EXECUTIONS_PC","DURATION_T","CPU_TIME_T","WAIT_TIME_T","ROW_COUNT_T","LOGICAL_IO_READS_T","LOGICAL_IO_WRITES_T","PHYSICAL_IO_READS_T","NUM_PHYSICAL_IO_READS_T","DOP_T","QUERY_MAX_USED_MEMORY_T","LOG_BYTES_USED_T","TEMPDB_SPACE_USED_T","CPU_TIME_BA","CPU_TIME_TA"]
+, "WAIT_TIME":["RANK","QUERY_ID","QUERY_HASH","PLAN_ID","SQL_TYPE","WAIT_TIME_S","WAIT_TIME_B","WAIT_TIME_T","WAIT_TIME_D","EXECUTIONS_B","EXECUTIONS_T","EXECUTIONS_D","EXECUTIONS_PC","DURATION_T","CPU_TIME_T","WAIT_TIME_T","ROW_COUNT_T","LOGICAL_IO_READS_T","LOGICAL_IO_WRITES_T","PHYSICAL_IO_READS_T","NUM_PHYSICAL_IO_READS_T","DOP_T","QUERY_MAX_USED_MEMORY_T","LOG_BYTES_USED_T","TEMPDB_SPACE_USED_T"]
+, "LOGICAL_IO_READS":["RANK","QUERY_ID","QUERY_HASH","PLAN_ID","SQL_TYPE","LOGICAL_IO_READS_S","LOGICAL_IO_READS_B","LOGICAL_IO_READS_T","LOGICAL_IO_READS_D","EXECUTIONS_B","EXECUTIONS_T","EXECUTIONS_D","EXECUTIONS_PC","DURATION_T","CPU_TIME_T","WAIT_TIME_T","ROW_COUNT_T","LOGICAL_IO_READS_T","LOGICAL_IO_WRITES_T","PHYSICAL_IO_READS_T","NUM_PHYSICAL_IO_READS_T","DOP_T","QUERY_MAX_USED_MEMORY_T","LOG_BYTES_USED_T","TEMPDB_SPACE_USED_T"]
+, "LOGICAL_IO_WRITES":["RANK","QUERY_ID","QUERY_HASH","PLAN_ID","SQL_TYPE","LOGICAL_IO_WRITES_S","LOGICAL_IO_WRITES_B","LOGICAL_IO_WRITES_T","LOGICAL_IO_WRITES_D","EXECUTIONS_B","EXECUTIONS_T","EXECUTIONS_D","EXECUTIONS_PC","DURATION_T","CPU_TIME_T","WAIT_TIME_T","ROW_COUNT_T","LOGICAL_IO_READS_T","LOGICAL_IO_WRITES_T","PHYSICAL_IO_READS_T","NUM_PHYSICAL_IO_READS_T","DOP_T","QUERY_MAX_USED_MEMORY_T","LOG_BYTES_USED_T","TEMPDB_SPACE_USED_T"]
+, "PHYSICAL_IO_READS":["RANK","QUERY_ID","QUERY_HASH","PLAN_ID","SQL_TYPE","PHYSICAL_IO_READS_S","PHYSICAL_IO_READS_B","PHYSICAL_IO_READS_T","PHYSICAL_IO_READS_D","EXECUTIONS_B","EXECUTIONS_T","EXECUTIONS_D","EXECUTIONS_PC","DURATION_T","CPU_TIME_T","WAIT_TIME_T","ROW_COUNT_T","LOGICAL_IO_READS_T","LOGICAL_IO_WRITES_T","PHYSICAL_IO_READS_T","NUM_PHYSICAL_IO_READS_T","DOP_T","QUERY_MAX_USED_MEMORY_T","LOG_BYTES_USED_T","TEMPDB_SPACE_USED_T"]
+, "DOP":["RANK","QUERY_ID","QUERY_HASH","PLAN_ID","SQL_TYPE","DOP_S","DOP_B","DOP_T","DOP_D","EXECUTIONS_B","EXECUTIONS_T","EXECUTIONS_D","EXECUTIONS_PC","DURATION_T","CPU_TIME_T","WAIT_TIME_T","ROW_COUNT_T","LOGICAL_IO_READS_T","LOGICAL_IO_WRITES_T","PHYSICAL_IO_READS_T","NUM_PHYSICAL_IO_READS_T","DOP_T","QUERY_MAX_USED_MEMORY_T","LOG_BYTES_USED_T","TEMPDB_SPACE_USED_T"]
+, "QUERY_MAX_USED_MEMORY":["RANK","QUERY_ID","QUERY_HASH","PLAN_ID","SQL_TYPE","QUERY_MAX_USED_MEMORY_S","QUERY_MAX_USED_MEMORY_B","QUERY_MAX_USED_MEMORY_T","QUERY_MAX_USED_MEMORY_D","EXECUTIONS_B","EXECUTIONS_T","EXECUTIONS_D","EXECUTIONS_PC","DURATION_T","CPU_TIME_T","WAIT_TIME_T","ROW_COUNT_T","LOGICAL_IO_READS_T","LOGICAL_IO_WRITES_T","PHYSICAL_IO_READS_T","NUM_PHYSICAL_IO_READS_T","DOP_T","QUERY_MAX_USED_MEMORY_T","LOG_BYTES_USED_T","TEMPDB_SPACE_USED_T"]
+, "ROW_COUNT":["RANK","QUERY_ID","QUERY_HASH","PLAN_ID","SQL_TYPE","ROW_COUNT_S","ROW_COUNT_B","ROW_COUNT_T","ROW_COUNT_D","EXECUTIONS_B","EXECUTIONS_T","EXECUTIONS_D","EXECUTIONS_PC","DURATION_T","CPU_TIME_T","WAIT_TIME_T","ROW_COUNT_T","LOGICAL_IO_READS_T","LOGICAL_IO_WRITES_T","PHYSICAL_IO_READS_T","NUM_PHYSICAL_IO_READS_T","DOP_T","QUERY_MAX_USED_MEMORY_T","LOG_BYTES_USED_T","TEMPDB_SPACE_USED_T"]
+, "NUM_PHYSICAL_IO_READS":["RANK","QUERY_ID","QUERY_HASH","PLAN_ID","SQL_TYPE","NUM_PHYSICAL_IO_READS_S","NUM_PHYSICAL_IO_READS_B","NUM_PHYSICAL_IO_READS_T","NUM_PHYSICAL_IO_READS_D","EXECUTIONS_B","EXECUTIONS_T","EXECUTIONS_D","EXECUTIONS_PC","DURATION_T","CPU_TIME_T","WAIT_TIME_T","ROW_COUNT_T","LOGICAL_IO_READS_T","LOGICAL_IO_WRITES_T","PHYSICAL_IO_READS_T","NUM_PHYSICAL_IO_READS_T","DOP_T","QUERY_MAX_USED_MEMORY_T","LOG_BYTES_USED_T","TEMPDB_SPACE_USED_T"]
+, "LOG_BYTES_USED":["RANK","QUERY_ID","QUERY_HASH","PLAN_ID","SQL_TYPE","LOG_BYTES_USED_S","LOG_BYTES_USED_B","LOG_BYTES_USED_T","LOG_BYTES_USED_D","EXECUTIONS_B","EXECUTIONS_T","EXECUTIONS_D","EXECUTIONS_PC","DURATION_T","CPU_TIME_T","WAIT_TIME_T","ROW_COUNT_T","LOGICAL_IO_READS_T","LOGICAL_IO_WRITES_T","PHYSICAL_IO_READS_T","NUM_PHYSICAL_IO_READS_T","DOP_T","QUERY_MAX_USED_MEMORY_T","LOG_BYTES_USED_T","TEMPDB_SPACE_USED_T"]
+, "TEMPDB_SPACE_USED":["RANK","QUERY_ID","QUERY_HASH","PLAN_ID","SQL_TYPE","TEMPDB_SPACE_USED_S","TEMPDB_SPACE_USED_B","TEMPDB_SPACE_USED_T","TEMPDB_SPACE_USED_D","EXECUTIONS_B","EXECUTIONS_T","EXECUTIONS_D","EXECUTIONS_PC","DURATION_T","CPU_TIME_T","WAIT_TIME_T","ROW_COUNT_T","LOGICAL_IO_READS_T","LOGICAL_IO_WRITES_T","PHYSICAL_IO_READS_T","NUM_PHYSICAL_IO_READS_T","DOP_T","QUERY_MAX_USED_MEMORY_T","LOG_BYTES_USED_T","TEMPDB_SPACE_USED_T"]
+, "PAGE_SERVER_IO_READS":["RANK","QUERY_ID","QUERY_HASH","PLAN_ID","SQL_TYPE","PAGE_SERVER_IO_READS_S","PAGE_SERVER_IO_READS_B","PAGE_SERVER_IO_READS_T","PAGE_SERVER_IO_READS_D","EXECUTIONS_B","EXECUTIONS_T","EXECUTIONS_D","EXECUTIONS_PC","DURATION_T","CPU_TIME_T","WAIT_TIME_T","ROW_COUNT_T","LOGICAL_IO_READS_T","LOGICAL_IO_WRITES_T","PHYSICAL_IO_READS_T","NUM_PHYSICAL_IO_READS_T","DOP_T","QUERY_MAX_USED_MEMORY_T","LOG_BYTES_USED_T","TEMPDB_SPACE_USED_T"]
+, "DB_SUMMARY":["PERIOD","DBSERVER","DBNAME","START_INTERVAL_ID","FINISH_INTERVAL_ID","START_INTERVAL_TIME","FINISH_INTERVAL_TIME","DURATION"]
+, "SQL_TEXT":["SQL_ID", "SQL_TYPE", "SQL_TEXT"]
+};
+
+var sqlStatsColsHeader1 = {
+"EXECUTIONS":["#","QUERY ID","QUERY HASH","PLAN ID","SQL TYPE","%","EXECUTIONS","TIME DISTRIBUTION","ROWS","LOGICAL IO","PHYSICAL IO","DOP ","MEMORY","LOG BYTES","TEMPDB"]
+, "DURATION":["#","QUERY ID","QUERY HASH","PLAN ID","SQL TYPE","%","DURATION","EXECUTIONS","TIME DISTRIBUTION","ROWS","LOGICAL IO","PHYSICAL IO","DOP ","MEMORY","LOG BYTES","TEMPDB","DURATION PER EXEC"]
+, "CPU_TIME":["#","QUERY ID","QUERY HASH","PLAN ID","SQL TYPE","%","CPU TIME","EXECUTIONS","TIME DISTRIBUTION","ROWS","LOGICAL IO","PHYSICAL IO","DOP ","MEMORY","LOG BYTES","TEMPDB","CPU PER EXEC"]
+, "WAIT_TIME":["#","QUERY ID","QUERY HASH","PLAN ID","SQL TYPE","%","WAIT TIME","EXECUTIONS","TIME DISTRIBUTION","ROWS","LOGICAL IO","PHYSICAL IO","DOP ","MEMORY","LOG BYTES","TEMPDB"]
+, "LOGICAL_IO_READS":["#","QUERY ID","QUERY HASH","PLAN ID","SQL TYPE","%","LOGICAL IO READS","EXECUTIONS","TIME DISTRIBUTION","ROWS","LOGICAL IO","PHYSICAL IO","DOP ","MEMORY","LOG BYTES","TEMPDB"]
+, "LOGICAL_IO_WRITES":["#","QUERY ID","QUERY HASH","PLAN ID","SQL TYPE","%","LOGICAL IO WRITES","EXECUTIONS","TIME DISTRIBUTION","ROWS","LOGICAL IO","PHYSICAL IO","DOP ","MEMORY","LOG BYTES","TEMPDB"]
+, "PHYSICAL_IO_READS":["#","QUERY ID","QUERY HASH","PLAN ID","SQL TYPE","%","PHYSICAL IO READS","EXECUTIONS","TIME DISTRIBUTION","ROWS","LOGICAL IO","PHYSICAL IO","DOP ","MEMORY","LOG BYTES","TEMPDB"]
+, "DOP":["#","QUERY ID","QUERY HASH","PLAN ID","SQL TYPE","%","DOP","EXECUTIONS","TIME DISTRIBUTION","ROWS","LOGICAL IO","PHYSICAL IO","DOP ","MEMORY","LOG BYTES","TEMPDB"]
+, "QUERY_MAX_USED_MEMORY":["#","QUERY ID","QUERY HASH","PLAN ID","SQL TYPE","%","QUERY MAX USED MEMORY","EXECUTIONS","TIME DISTRIBUTION","ROWS","LOGICAL IO","PHYSICAL IO","DOP ","MEMORY","LOG BYTES","TEMPDB"]
+, "ROW_COUNT":["#","QUERY ID","QUERY HASH","PLAN ID","SQL TYPE","%","ROW COUNT","EXECUTIONS","TIME DISTRIBUTION","ROWS","LOGICAL IO","PHYSICAL IO","DOP ","MEMORY","LOG BYTES","TEMPDB"]
+, "NUM_PHYSICAL_IO_READS":["#","QUERY ID","QUERY HASH","PLAN ID","SQL TYPE","%","NUM PHYSICAL IO READS","EXECUTIONS","TIME DISTRIBUTION","ROWS","LOGICAL IO","PHYSICAL IO","DOP ","MEMORY","LOG BYTES","TEMPDB"]
+, "LOG_BYTES_USED":["#","QUERY ID","QUERY HASH","PLAN ID","SQL TYPE","%","LOG BYTES USED","EXECUTIONS","TIME DISTRIBUTION","ROWS","LOGICAL IO","PHYSICAL IO","DOP ","MEMORY","LOG BYTES","TEMPDB"]
+, "TEMPDB_SPACE_USED":["#","QUERY ID","QUERY HASH","PLAN ID","SQL TYPE","%","TEMPDB SPACE USED","EXECUTIONS","TIME DISTRIBUTION","ROWS","LOGICAL IO","PHYSICAL IO","DOP ","MEMORY","LOG BYTES","TEMPDB"]
+, "PAGE_SERVER_IO_READS":["#","QUERY ID","QUERY HASH","PLAN ID","SQL TYPE","%","PAGE SERVER IO READS","EXECUTIONS","TIME DISTRIBUTION","ROWS","LOGICAL IO","PHYSICAL IO","DOP ","MEMORY","LOG BYTES","TEMPDB"]
+, "DB_SUMMARY":["PERIOD","DB SERVER","DB NAME","START INTERVAL ID","FINISH INTERVAL ID","START INTERVAL TIME","FINISH INTERVAL TIME","INTERVAL DURATION"]
+, "SQL_TEXT":["QUERY HASH", "SQL TYPE", "SQL_TEXT (First 2000 characters)"]
+};
+
+var sqlStatsColsHeader2 = {
+"EXECUTIONS":["B","T","Δ","%Δ","DURATION","CPU","WAIT","READS","WRITES","8k READS","READS"]
+, "DURATION":["B","T","Δ","B","T","Δ","%Δ","DURATION","CPU","WAIT","READS","WRITES","8k READS","READS","B","T"]
+, "CPU_TIME":["B","T","Δ","B","T","Δ","%Δ","DURATION","CPU","WAIT","READS","WRITES","8k READS","READS","B","T"]
+, "WAIT_TIME":["B","T","Δ","B","T","Δ","%Δ","DURATION","CPU","WAIT","READS","WRITES","8k READS","READS"]
+, "LOGICAL_IO_READS":["B","T","Δ","B","T","Δ","%Δ","DURATION","CPU","WAIT","READS","WRITES","8k READS","READS"]
+, "LOGICAL_IO_WRITES":["B","T","Δ","B","T","Δ","%Δ","DURATION","CPU","WAIT","READS","WRITES","8k READS","READS"]
+, "PHYSICAL_IO_READS":["B","T","Δ","B","T","Δ","%Δ","DURATION","CPU","WAIT","READS","WRITES","8k READS","READS"]
+, "DOP":["B","T","Δ","B","T","Δ","%Δ","DURATION","CPU","WAIT","READS","WRITES","8k READS","READS"]
+, "QUERY_MAX_USED_MEMORY":["B","T","Δ","B","T","Δ","%Δ","DURATION","CPU","WAIT","READS","WRITES","8k READS","READS"]
+, "ROW_COUNT":["B","T","Δ","B","T","Δ","%Δ","DURATION","CPU","WAIT","READS","WRITES","8k READS","READS"]
+, "NUM_PHYSICAL_IO_READS":["B","T","Δ","B","T","Δ","%Δ","DURATION","CPU","WAIT","READS","WRITES","8k READS","READS"]
+, "LOG_BYTES_USED":["B","T","Δ","B","T","Δ","%Δ","DURATION","CPU","WAIT","READS","WRITES","8k READS","READS"]
+, "TEMPDB_SPACE_USED":["B","T","Δ","B","T","Δ","%Δ","DURATION","CPU","WAIT","READS","WRITES","8k READS","READS"]
+, "PAGE_SERVER_IO_READS":["B","T","Δ","B","T","Δ","%Δ","DURATION","CPU","WAIT","READS","WRITES","8k READS","READS"]
+, "DB_SUMMARY":[]
+, "SQL_TEXT":[]
+};
+
+var sqlStatsHeaderColspan2 = ["LOGICAL IO","PHYSICAL IO","DURATION PER EXEC","CPU PER EXEC","GETS PER EXEC","ROWS PER EXEC"];
+var sqlStatsHeaderColspan3 = ["TIME DISTRIBUTION","DURATION","CPU TIME","WAIT TIME","LOGICAL IO READS","LOGICAL IO WRITES","PHYSICAL IO READS","DOP","QUERY MAX USED MEMORY","ROW COUNT","NUM PHYSICAL IO READS","LOG BYTES USED","TEMPDB SPACE USED","PAGE SERVER IO READS"];
+var sqlStatsHeaderColspan4 = ["EXECUTIONS"];
+var sqlStatsHeaderColspan7 = [];
+
+
+
+var sqlStatsTableDetails = {
+"EXECUTIONS":{name:"Top 20 SQL by Executions", description:"Total Executions",colShare:"EXECUTIONS_S",colDiff:"EXECUTIONS_D",colBaseline:"EXECUTIONS_B",colTestrun:"EXECUTIONS_T"}
+, "DURATION":{name:"Top 20 SQL by Duration", description:"Total Duration",colShare:"DURATION_S",colDiff:"DURATION_D",colBaseline:"DURATION_B",colTestrun:"DURATION_T"}
+, "CPU_TIME":{name:"Top 20 SQL by CPU Time", description:"Total CPU Time",colShare:"CPU_TIME_S",colDiff:"CPU_TIME_D",colBaseline:"CPU_TIME_B",colTestrun:"CPU_TIME_T"}
+, "WAIT_TIME":{name:"Top 20 SQL by Other Wait Time", description:"Total Other Wait Time",colShare:"WAIT_TIME_S",colDiff:"WAIT_TIME_D",colBaseline:"WAIT_TIME_B",colTestrun:"WAIT_TIME_T"}
+, "LOGICAL_IO_READS":{name:"Top 20 SQL by Logical IO Reads (8kb)", description:"Total Logical IO Reads (8kb)",colShare:"LOGICAL_IO_READS_S",colDiff:"LOGICAL_IO_READS_D",colBaseline:"LOGICAL_IO_READS_B",colTestrun:"LOGICAL_IO_READS_T"}
+, "LOGICAL_IO_WRITES":{name:"Top 20 SQL by Logical IO Writes", description:"Total Logical IO Writes",colShare:"LOGICAL_IO_WRITES_S",colDiff:"LOGICAL_IO_WRITES_D",colBaseline:"LOGICAL_IO_WRITES_B",colTestrun:"LOGICAL_IO_WRITES_T"}
+, "PHYSICAL_IO_READS":{name:"Top 20 SQL by Physical IO Reads", description:"Total Physical IO Reads",colShare:"PHYSICAL_IO_READS_S",colDiff:"PHYSICAL_IO_READS_D",colBaseline:"PHYSICAL_IO_READS_B",colTestrun:"PHYSICAL_IO_READS_T"}
+, "DOP":{name:"Top 20 SQL by Degree of Parallelism", description:"Total Degree of Parallelism",colShare:"DOP_S",colDiff:"DOP_D",colBaseline:"DOP_B",colTestrun:"DOP_T"}
+, "QUERY_MAX_USED_MEMORY":{name:"Top 20 SQL by Query Max Used Memory", description:"Total Query Max Used Memory",colShare:"QUERY_MAX_USED_MEMORY_S",colDiff:"QUERY_MAX_USED_MEMORY_D",colBaseline:"QUERY_MAX_USED_MEMORY_B",colTestrun:"QUERY_MAX_USED_MEMORY_T"}
+, "ROW_COUNT":{name:"Top 20 SQL by Row Count", description:"Total Row Count",colShare:"ROW_COUNT_S",colDiff:"ROW_COUNT_D",colBaseline:"ROW_COUNT_B",colTestrun:"ROW_COUNT_T"}
+, "NUM_PHYSICAL_IO_READS":{name:"Top 20 SQL by Physical Physical IO Reads", description:"Total Physical IO Reads",colShare:"NUM_PHYSICAL_IO_READS_S",colDiff:"NUM_PHYSICAL_IO_READS_D",colBaseline:"NUM_PHYSICAL_IO_READS_B",colTestrun:"NUM_PHYSICAL_IO_READS_T"}
+, "LOG_BYTES_USED":{name:"Top 20 SQL by Log Bytes Used", description:"Total Log Bytes Used",colShare:"LOG_BYTES_USED_S",colDiff:"LOG_BYTES_USED_D",colBaseline:"LOG_BYTES_USED_B",colTestrun:"LOG_BYTES_USED_T"}
+, "TEMPDB_SPACE_USED":{name:"Top 20 SQL by Temp DB Space Used", description:"Total Temp DB Space Used",colShare:"TEMPDB_SPACE_USED_S",colDiff:"TEMPDB_SPACE_USED_D",colBaseline:"TEMPDB_SPACE_USED_B",colTestrun:"TEMPDB_SPACE_USED_T"}
+, "PAGE_SERVER_IO_READS":{name:"Top 20 SQL by Page Server IO Reads", description:"Total Page Server IO Reads",colShare:"PAGE_SERVER_IO_READS_S",colDiff:"PAGE_SERVER_IO_READS_D",colBaseline:"PAGE_SERVER_IO_READS_B",colTestrun:"PAGE_SERVER_IO_READS_T"}
+, "SYS_TIME_MODEL":{name:"System Time Model", description:"",colShare:"",colDiff:"",colBaseline:"",colTestrun:""}
+, "DB_SUMMARY":{name:"", description:"",colShare:"",colDiff:"",colBaseline:"",colTestrun:""}
+, "SQL_TEXT":{name:"SQL Text", description:"",colShare:"",colDiff:"",colBaseline:"",colTestrun:""}
+, "SYS_STAT":{name:"System Statistics", description:"",colShare:"",colDiff:"",colBaseline:"",colTestrun:""}
+};
+
+
+for (i = 0, t = 0; i < dataSqlStatsTable.length; i++)
+{
+var myObj = {};
+sqlStatsCols[dataSqlStatsTable[i]["STATISTIC"]].forEach(function(d){
+
+switch(d)
+{
+case "DURATION_D": myObj[d] = (+dataSqlStatsTable[i]["DURATION_T"]) - (+dataSqlStatsTable[i]["DURATION_B"]); break;
+case "CPU_TIME_D": myObj[d] = (+dataSqlStatsTable[i]["CPU_TIME_T"]) - (+dataSqlStatsTable[i]["CPU_TIME_B"]); break;
+case "WAIT_TIME_D": myObj[d] = (+dataSqlStatsTable[i]["WAIT_TIME_T"]) - (+dataSqlStatsTable[i]["WAIT_TIME_B"]); break;
+case "EXECUTIONS_D": myObj[d] = (+dataSqlStatsTable[i]["EXECUTIONS_T"]) - (+dataSqlStatsTable[i]["EXECUTIONS_B"]); break;
+case "LOGICAL_IO_READS_D": myObj[d] = (+dataSqlStatsTable[i]["LOGICAL_IO_READS_T"]) - (+dataSqlStatsTable[i]["LOGICAL_IO_READS_B"]); break;
+case "LOGICAL_IO_WRITES_D": myObj[d] = (+dataSqlStatsTable[i]["LOGICAL_IO_WRITES_T"]) - (+dataSqlStatsTable[i]["LOGICAL_IO_WRITES_B"]); break;
+case "PHYSICAL_IO_READS_D": myObj[d] = (+dataSqlStatsTable[i]["PHYSICAL_IO_READS_T"]) - (+dataSqlStatsTable[i]["PHYSICAL_IO_READS_B"]); break;
+case "DOP_D": myObj[d] = (+dataSqlStatsTable[i]["DOP_T"]) - (+dataSqlStatsTable[i]["DOP_B"]); break;
+case "QUERY_MAX_USED_MEMORY_D": myObj[d] = (+dataSqlStatsTable[i]["QUERY_MAX_USED_MEMORY_T"]) - (+dataSqlStatsTable[i]["QUERY_MAX_USED_MEMORY_B"]); break;
+case "ROW_COUNT_D": myObj[d] = (+dataSqlStatsTable[i]["ROW_COUNT_T"]) - (+dataSqlStatsTable[i]["ROW_COUNT_B"]); break;
+case "NUM_PHYSICAL_IO_READS_D": myObj[d] = (+dataSqlStatsTable[i]["NUM_PHYSICAL_IO_READS_T"]) - (+dataSqlStatsTable[i]["NUM_PHYSICAL_IO_READS_B"]); break;
+case "PAGE_SERVER_IO_READS_D": myObj[d] = (+dataSqlStatsTable[i]["PAGE_SERVER_IO_READS_T"]) - (+dataSqlStatsTable[i]["PAGE_SERVER_IO_READS_B"]); break;
+case "LOG_BYTES_USED_D": myObj[d] = (+dataSqlStatsTable[i]["LOG_BYTES_USED_T"]) - (+dataSqlStatsTable[i]["LOG_BYTES_USED_B"]); break;
+case "TEMPDB_SPACE_USED_D": myObj[d] = (+dataSqlStatsTable[i]["TEMPDB_SPACE_USED_T"]) - (+dataSqlStatsTable[i]["TEMPDB_SPACE_USED_B"]); break;
+case "EXECUTIONS_PC": if ((+dataSqlStatsTable[i]["EXECUTIONS_B"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTable[i]["EXECUTIONS_T"]) - (+dataSqlStatsTable[i]["EXECUTIONS_B"]))/(+dataSqlStatsTable[i]["EXECUTIONS_B"]);} break;
+case "DURATION_BA": if ((+dataSqlStatsTable[i]["EXECUTIONS_B"]) == 0 ) {myObj[d] = (+dataSqlStatsTable[i]["DURATION_B"])} else {myObj[d] = ((+dataSqlStatsTable[i]["DURATION_B"]))/(+dataSqlStatsTable[i]["EXECUTIONS_B"]);} break;
+case "DURATION_TA": if ((+dataSqlStatsTable[i]["EXECUTIONS_T"]) == 0 ) {myObj[d] = (+dataSqlStatsTable[i]["DURATION_T"])} else {myObj[d] = ((+dataSqlStatsTable[i]["DURATION_T"]))/(+dataSqlStatsTable[i]["EXECUTIONS_T"]);} break;
+case "CPU_TIME_BA": if ((+dataSqlStatsTable[i]["EXECUTIONS_B"]) == 0 ) {myObj[d] = (+dataSqlStatsTable[i]["CPU_TIME_B"])} else {myObj[d] = ((+dataSqlStatsTable[i]["CPU_TIME_B"]))/(+dataSqlStatsTable[i]["EXECUTIONS_B"]);} break;
+case "CPU_TIME_TA": if ((+dataSqlStatsTable[i]["EXECUTIONS_T"]) == 0 ) {myObj[d] = (+dataSqlStatsTable[i]["CPU_TIME_T"])} else {myObj[d] = ((+dataSqlStatsTable[i]["CPU_TIME_T"]))/(+dataSqlStatsTable[i]["EXECUTIONS_T"]);} break;
+case "BUFFER_GETS_BA": if ((+dataSqlStatsTable[i]["EXECUTIONS_B"]) == 0 ) {myObj[d] = (+dataSqlStatsTable[i]["BUFFER_GETS_B"])} else {myObj[d] = ((+dataSqlStatsTable[i]["BUFFER_GETS_B"]))/(+dataSqlStatsTable[i]["EXECUTIONS_B"]);} break;
+case "BUFFER_GETS_TA": if ((+dataSqlStatsTable[i]["EXECUTIONS_T"]) == 0 ) {myObj[d] = (+dataSqlStatsTable[i]["BUFFER_GETS_T"])} else {myObj[d] = ((+dataSqlStatsTable[i]["BUFFER_GETS_T"]))/(+dataSqlStatsTable[i]["EXECUTIONS_T"]);} break;
+case "ROWS_PROCESSED_BA": if ((+dataSqlStatsTable[i]["EXECUTIONS_B"]) == 0 ) {myObj[d] = (+dataSqlStatsTable[i]["ROWS_PROCESSED_B"])} else {myObj[d] = ((+dataSqlStatsTable[i]["ROWS_PROCESSED_B"]))/(+dataSqlStatsTable[i]["EXECUTIONS_B"]);} break;
+case "ROWS_PROCESSED_TA": if ((+dataSqlStatsTable[i]["EXECUTIONS_T"]) == 0 ) {myObj[d] = (+dataSqlStatsTable[i]["ROWS_PROCESSED_T"])} else {myObj[d] = ((+dataSqlStatsTable[i]["ROWS_PROCESSED_T"]))/(+dataSqlStatsTable[i]["EXECUTIONS_T"]);} break;
+
+default: myObj[d] = dataSqlStatsTable[i][d];
+}
+
+})
+sqlStats[dataSqlStatsTable[i]["STATISTIC"]].push(myObj);
+};
+
+var sqlStatsTables = ["DURATION","CPU_TIME","WAIT_TIME","EXECUTIONS","ROW_COUNT","LOGICAL_IO_READS","LOGICAL_IO_WRITES","PHYSICAL_IO_READS","DOP","QUERY_MAX_USED_MEMORY","NUM_PHYSICAL_IO_READS","LOG_BYTES_USED","TEMPDB_SPACE_USED","PAGE_SERVER_IO_READS"];
+
+// DB Summary
+var dataDbSummary = d3.csvParse(csvDbSummary);
+
+for (i = 0, t = 0; i < dataDbSummary.length; i++)
+{
+var myObj = {};
+sqlStatsCols["DB_SUMMARY"].forEach(function(d){
+myObj[d] = dataDbSummary[i][d];
+})
+sqlStats["DB_SUMMARY"].push(myObj);
+};
+
+// SQL Stats Charts
+var dataSqlStatsChart = d3.csvParse(csvSqlStatsChart);
+dataSqlStatsChart.forEach(function(d) {
+d.value_b = +d.value_b;
+d.value_t = +d.value_t;
+});
+
+var sqlStatsGroups = {
+"SQL_TYPE":[{series:pointA,total:0},{series:pointB,total:0}]
+,"EXECUTIONS":[{series:pointA,total:0},{series:pointB,total:0}]
+,"DURATION":[{series:pointA,total:0},{series:pointB,total:0}]
+,"CPU_TIME":[{series:pointA,total:0},{series:pointB,total:0}]
+,"WAIT_TIME":[{series:pointA,total:0},{series:pointB,total:0}]
+,"LOGICAL_IO_READS":[{series:pointA,total:0},{series:pointB,total:0}]
+,"LOGICAL_IO_WRITES":[{series:pointA,total:0},{series:pointB,total:0}]
+,"PHYSICAL_IO_READS":[{series:pointA,total:0},{series:pointB,total:0}]
+,"DOP":[{series:pointA,total:0},{series:pointB,total:0}]
+,"QUERY_MAX_USED_MEMORY":[{series:pointA,total:0},{series:pointB,total:0}]
+,"ROW_COUNT":[{series:pointA,total:0},{series:pointB,total:0}]
+,"NUM_PHYSICAL_IO_READS":[{series:pointA,total:0},{series:pointB,total:0}]
+,"LOG_BYTES_USED":[{series:pointA,total:0},{series:pointB,total:0}]
+,"TEMPDB_SPACE_USED":[{series:pointA,total:0},{series:pointB,total:0}]
+,"PAGE_SERVER_IO_READS":[{series:pointA,total:0},{series:pointB,total:0}]
+};
+
+var sqlStatsChartDetails = [
+{chartId:"SQL_TYPE",chartName:"SQL TYPE",axisName:"Count"}
+,{chartId:"EXECUTIONS",chartName:"EXECUTIONS",axisName:"Count"}
+,{chartId:"DURATION",chartName:"DURATION",axisName:"Seconds"}
+,{chartId:"CPU_TIME",chartName:"CPU TIME",axisName:"Seconds"}
+,{chartId:"WAIT_TIME",chartName:"WAIT TIME",axisName:"Seconds"}
+,{chartId:"LOGICAL_IO_READS",chartName:"LOGICAL IO READS",axisName:"Count"}
+,{chartId:"LOGICAL_IO_WRITES",chartName:"LOGICAL IO WRITES",axisName:"Count"}
+,{chartId:"PHYSICAL_IO_READS",chartName:"PHYSICAL IO READS",axisName:"Count"}
+,{chartId:"DOP",chartName:"DOP",axisName:"Count"}
+,{chartId:"QUERY_MAX_USED_MEMORY",chartName:"QUERY MAX USED MEMORY",axisName:"Count"}
+,{chartId:"ROW_COUNT",chartName:"ROW COUNT",axisName:"Count"}
+,{chartId:"NUM_PHYSICAL_IO_READS",chartName:"NUM PHYSICAL IO READS",axisName:"Count"}
+,{chartId:"LOG_BYTES_USED",chartName:"LOG BYTES USED",axisName:"Count"}
+,{chartId:"TEMPDB_SPACE_USED",chartName:"TEMPDB SPACE USED",axisName:"Bytes"}
+,{chartId:"PAGE_SERVER_IO_READS",chartName:"PAGE SERVER IO READS",axisName:"Count"}
+];
+
+for (i = 0, t = 0; i < dataSqlStatsChart.length; ++i)
+{
+sqlStatsGroups[dataSqlStatsChart[i].stat_name][0][dataSqlStatsChart[i].sql_type] = dataSqlStatsChart[i].value_b;
+sqlStatsGroups[dataSqlStatsChart[i].stat_name][0]["total"] += dataSqlStatsChart[i].value_b;
+sqlStatsGroups[dataSqlStatsChart[i].stat_name][1][dataSqlStatsChart[i].sql_type] = dataSqlStatsChart[i].value_t;
+sqlStatsGroups[dataSqlStatsChart[i].stat_name][1]["total"] += dataSqlStatsChart[i].value_t;
+
+if (!sqlStatsGroups[dataSqlStatsChart[i].stat_name].columns) sqlStatsGroups[dataSqlStatsChart[i].stat_name].columns = [];
+sqlStatsGroups[dataSqlStatsChart[i].stat_name].columns.push(dataSqlStatsChart[i].sql_type);
+}
+
+// SQL Text Tables
+
+var psv = d3.dsvFormat("!@#!");
+var dataSqlText = psv.parse(csvSqlText);
+
+for (i = 0, t = 0; i < dataSqlText.length; i++)
+{
+var myObj = {};
+sqlStatsCols["SQL_TEXT"].forEach(function(d){
+myObj[d] = dataSqlText[i][d];
+})
+sqlStats["SQL_TEXT"].push(myObj);
+};
+
+var dataDbTimeBr = d3.csvParse(csvDbTimeBr);
+dataDbTimeBr.forEach(function(d) {
+d.date = timeFormatYMD_HM(d.date);
+d.value = +d.value;
+});
+
+var startTimeBr = timeFormatYMD_HM(sqlStats["DB_SUMMARY"][0].START_INTERVAL_TIME);
+var finishTimeBr = timeFormatYMD_HM(sqlStats["DB_SUMMARY"][0].FINISH_INTERVAL_TIME);
+
+var dataDbTimeTr = d3.csvParse(csvDbTimeTr);
+dataDbTimeTr.forEach(function(d) {
+d.date = timeFormatYMD_HM(d.date);
+d.value = +d.value;
+});
+
+var startTimeTr = timeFormatYMD_HM(sqlStats["DB_SUMMARY"][1].START_INTERVAL_TIME);
+var finishTimeTr = timeFormatYMD_HM(sqlStats["DB_SUMMARY"][1].FINISH_INTERVAL_TIME);
+
+var dbTimeArrayTr = dbTimeParse(startTimeTr, finishTimeTr, dataDbTimeTr);
+
+var totalCpuTr = totalCpu;
+var totalBufferIOTr = totalBufferIO;
+var totalOtherTr = totalOther;
+
+var dbTimeArrayBr = dbTimeParse(startTimeBr, finishTimeBr, dataDbTimeBr);
+
+var totalCpuBr = totalCpu;
+var totalBufferIOBr = totalBufferIO;
+var totalOtherBr = totalOther;
+
+var maxDbTimeValue = d3.max([d3.max(dbTimeArrayBr, function(d){return d.total;}),d3.max(dbTimeArrayTr, function(d){return d.total;})]);
+
+var ashKeys = ["CPU","Scheduler","User I/O","System I/O","Concurrency","Application","Commit","Configuration","Administrative","Network","Queueing","Cluster","Other"];
+var ashColors = d3.scaleOrdinal().range(["#96dfce","#9DE0AD","#65a1ac","#5FB2D5","#C14755","#EE3E38","#F0C080","#FF9190","#96B6C5","#ADC4CE","#EEE0C9","#F1F0E8","#E4DECB"]);
+
+var waitClassColors = d3.scaleOrdinal().range(["#9DE0AD","#65a1ac","#5FB2D5","#C14755","#EE3E38","#F0C080","#FF9190","#96B6C5","#ADC4CE","#EEE0C9","#F1F0E8","#E4DECB"]);
+
+var waitEventsData = d3.csvParse(csvWaitEvents);
+
+var waitClassGroups = {
+"CPU":[{series:pointA, total:0},{series:pointB, total:0}]
+,"Worker Thread":[{series:pointA, total:0},{series:pointB, total:0}]
+,"Lock":[{series:pointA, total:0},{series:pointB, total:0}]
+,"Latch":[{series:pointA, total:0},{series:pointB, total:0}]
+,"Buffer Latch":[{series:pointA, total:0},{series:pointB, total:0}]
+,"Buffer IO":[{series:pointA, total:0},{series:pointB, total:0}]
+,"Preemptive":[{series:pointA, total:0},{series:pointB, total:0}]
+,"Tran Log IO":[{series:pointA, total:0},{series:pointB, total:0}]
+,"Network IO":[{series:pointA, total:0},{series:pointB, total:0}]
+,"Memory":[{series:pointA, total:0},{series:pointB, total:0}]
+,"Other Disk IO":[{series:pointA, total:0},{series:pointB, total:0}]
+,"Other":[{series:pointA, total:0},{series:pointB, total:0}]
+,"Idle":[{series:pointA, total:0},{series:pointB, total:0}]
+,"Wait Classes":[{series:pointA, total:0},{series:pointB, total:0}]
+,"DB Time":[{series:pointA, total:0},{series:pointB, total:0}]
+};
+
+waitEventsData.forEach(function(d) {
+d.tst_before = +d.tst_before;
+d.tst_after = +d.tst_after;
+});
+
+for (i = 0, t = 0; i < waitEventsData.length; ++i)
+{
+waitClassGroups[waitEventsData[i].wait_class][0][waitEventsData[i].wait_event] = waitEventsData[i].tst_before;
+waitClassGroups[waitEventsData[i].wait_class][0]["total"] += waitEventsData[i].tst_before;
+waitClassGroups[waitEventsData[i].wait_class][1][waitEventsData[i].wait_event] = waitEventsData[i].tst_after;
+waitClassGroups[waitEventsData[i].wait_class][1]["total"] += waitEventsData[i].tst_after;
+
+if (!waitClassGroups[waitEventsData[i].wait_class].columns) waitClassGroups[waitEventsData[i].wait_class].columns = [];
+waitClassGroups[waitEventsData[i].wait_class].columns.push(waitEventsData[i].wait_event);
+}
+
+
+waitClassGroups["Wait Classes"].columns = [];
+
+["CPU","Buffer IO","Worker Thread","Lock","Latch","Buffer Latch","Preemptive","Tran Log IO","Network IO","Memory","Other Disk IO","Other"].forEach(function(d) {
+
+waitClassGroups["Wait Classes"][0][d] = waitClassGroups[d][0]["total"];
+waitClassGroups["Wait Classes"][0]["total"] += waitClassGroups[d][0]["total"];
+waitClassGroups["Wait Classes"][1][d] = waitClassGroups[d][1]["total"];
+waitClassGroups["Wait Classes"][1]["total"] += waitClassGroups[d][1]["total"];
+waitClassGroups["Wait Classes"].columns.push(d);
+
+});
+
+waitClassGroups["DB Time"].columns = [];
+waitClassGroups["DB Time"][0]["CPU"] = totalCpuBr;
+waitClassGroups["DB Time"][1]["CPU"] = totalCpuTr;
+waitClassGroups["DB Time"].columns.push("CPU");
+
+waitClassGroups["DB Time"][0]["Buffer IO"] = totalBufferIOBr;
+waitClassGroups["DB Time"][1]["Buffer IO"] = totalBufferIOTr;
+waitClassGroups["DB Time"].columns.push("Buffer IO");
+
+waitClassGroups["DB Time"][0]["Other"] = totalOtherBr;
+waitClassGroups["DB Time"][1]["Other"] = totalOtherTr;
+waitClassGroups["DB Time"].columns.push("Other");
+
+waitClassGroups["DB Time"][0]["total"] = totalCpuBr + totalBufferIOBr + totalOtherBr;
+waitClassGroups["DB Time"][1]["total"] = totalCpuTr + totalBufferIOTr + totalOtherTr;
+
+// Conditional formatting
+var colorScale = d3.scaleThreshold()
+.domain([-0.5,-0.3,-0.1,0.1,1])
+.range([d3.interpolateGreens(0.45), d3.interpolateGreens(0.4),d3.interpolateGreens(0.3), d3.interpolateGreens(0),d3.interpolateReds(0.3), d3.interpolateReds(0.45)]);
+
+var colorInterpolateRed = d3.scaleSequential(d3.interpolateReds)
+var colorInterpolateGreen = d3.scaleSequential(d3.interpolateGreens)
+
+drawAllObjects(getWrapperWidth());
+
+</script>

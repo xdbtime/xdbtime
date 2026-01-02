@@ -1,0 +1,742 @@
+<!--
+    Copyright 2016-2026 Taras Guliak XDBTIME Community Edition for SQL Server
+    All rights reserved.
+
+    ========================================
+
+    D3
+
+    Copyright 2010-2023 Mike Bostock
+
+    Permission to use, copy, modify, and/or distribute this software for any purpose
+    with or without fee is hereby granted, provided that the above copyright notice
+    and this permission notice appear in all copies.
+
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+    FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+    OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+    TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+    THIS SOFTWARE.
+
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>xdbtime &mdash; SQL Server</title>
+    <link rel="shortcut icon" href="https://www.xdbtime.com/images/favicon.png">
+    <link href="https://fonts.googleapis.com/css?family=Lato&display=swap" rel="stylesheet">
+    <style>
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+            }
+        }
+
+        body {
+            color: #333;
+            margin: 0;
+        }
+
+        .main-wrapper {
+            max-width: 100rem;
+            margin: auto;
+        }
+
+        main {
+            border-width: 1px 0;
+            border-style: solid;
+        }
+
+        h2 {
+            margin: 0;
+        }
+
+        main>div+h2 {
+            border-top: 1px solid;
+        }
+
+        h2 button {
+            all: inherit;
+            border: 0;
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0.5em 0;
+        }
+
+        h2 button:focus svg {
+            outline: 1px solid;
+        }
+
+        button svg {
+            height: 1em;
+            margin-left: 0.5em;
+        }
+
+        [aria-expanded="true"].vert {
+            display: none;
+        }
+
+        [aria-expanded] rect {
+            fill: currentColor;
+        }
+
+        html {
+            font-family: 'Lato', sans-serif;
+
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        .chartColorDark {
+            fill: #444;
+        }
+
+        .chartColorLight {
+            fill: #999;
+        }
+
+        text {
+            fill: #999;
+        }
+
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #999;
+        }
+
+        path.domain {
+            stroke: none;
+        }
+
+        .axis-grid line {
+            stroke: rgba(0, 0, 0, 0.103);
+        }
+
+        .y .tick line {
+            stroke: #ddd;
+        }
+
+        table {
+            font-size: 12px;
+        }
+
+        td {
+            border-bottom: 0.5px solid #ddd;
+            border-top-left-radius: 1.5px;
+            border-top-right-radius: 1.5px;
+            border-bottom-left-radius: 1.5px;
+            border-bottom-right-radius: 1.5px;
+        }
+
+        th {
+            font-weight: bold;
+            background-color: #999;
+            color: white;
+            border-top-left-radius: 1.5px;
+            border-top-right-radius: 1.5px;
+            border-bottom-left-radius: 1.5px;
+            border-bottom-right-radius: 1.5px;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+            border-top-left-radius: 1.5px;
+            border-top-right-radius: 1.5px;
+            border-bottom-left-radius: 1.5px;
+            border-bottom-right-radius: 1.5px;
+        }
+
+        .header {
+            background: #65a1ac;
+            color: white;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 12px;
+        }
+    </style>
+
+</head>
+<body>
+<header class="header">
+    <a href="https://www.xdbtime.com">
+        <img src="https://www.xdbtime.com/images/logo-white.png" alt="" height="25"/>
+    </a>
+</header>
+<div class="main-wrapper" id="main-wrapper">
+    <h1>Database Performance Comparison Report</h1>
+    <h5>
+        <span style="text-align:left;">for SQL Server (based on Query Store data)</span>
+        <span style="float:right;">v2025.12</span>
+    </h5>
+    <div id="chartMain"></div>
+    <main>
+        <h2>
+            <button aria-expanded="false">
+                DB Time
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
+                    <rect class="vert" height="8" width="2" y="1" x="4"/>
+                    <rect height="2" width="8" y="4" x="1"/>
+                </svg>
+            </button>
+        </h2>
+        <div id="chartDbTime" hidden>
+            <p>DB Time charts are based on query_store_runtime_stats view (CPU Time) and query_store_wait_stats view
+                (Buffer IO and Other wait time)</p>
+        </div>
+        <h2>
+            <button aria-expanded="false">
+                Wait Classes
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
+                    <rect class="vert" height="8" width="2" y="1" x="4"/>
+                    <rect height="2" width="8" y="4" x="1"/>
+                </svg>
+            </button>
+        </h2>
+        <div id="chartWaitClasses" hidden>
+            <p>Wait Classes charts are based on query_store_wait_stats view </p>
+        </div>
+        <h2>
+            <button aria-expanded="false">
+                Query Statistics charts
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
+                    <rect class="vert" height="8" width="2" y="1" x="4"/>
+                    <rect height="2" width="8" y="4" x="1"/>
+                </svg>
+            </button>
+        </h2>
+        <div id="chartSqlStatCharts" hidden>
+            <p>SQL Statistics charts are based on query_store_runtime_stats view. Query statistics are grouped by
+                query_id and execution plan. SQL classification is based on query. There are 3 default classes: Aged
+                Out, New and Unclassified. </p>
+        </div>
+        <h2>
+            <button aria-expanded="false">
+                Query Statistics tables
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
+                    <rect class="vert" height="8" width="2" y="1" x="4"/>
+                    <rect height="2" width="8" y="4" x="1"/>
+                </svg>
+            </button>
+        </h2>
+        <div id="chartSqlStatTables" hidden>
+            <p>Query statistics tables are based on query_store_runtime_stats view. Query statistics are grouped by
+                query_id and execution plan. SQL classification is based on query. There are 3 default classes: Aged
+                Out, New and Unclassified. </p>
+        </div>
+        <h2>
+            <button aria-expanded="false">
+                Query Text
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
+                    <rect class="vert" height="8" width="2" y="1" x="4"/>
+                    <rect height="2" width="8" y="4" x="1"/>
+                </svg>
+            </button>
+        </h2>
+        <div id="chartSqlText" hidden>
+            <p>Query text is based on query_store_query_text </p>
+        </div>
+    </main>
+</div>
+</body>
+</html>
+
+
+<script src="https://d3js.org/d3.v4.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<script type="text/javascript">
+
+    const getWrapperWidth = () => {
+        const wr = document.getElementById('main-wrapper');
+        return wr.getBoundingClientRect().width;
+    }
+
+    // Header
+    const header = document.querySelector('.header');
+    const headerHeight = header.getBoundingClientRect().height;
+    const preHeader = document.createElement('div');
+    preHeader.style.height = headerHeight + 'px';
+    document.body.prepend(preHeader);
+
+    window.addEventListener('resize', () => {
+        // console.log(getWrapperWidth());
+        // TODO: renderAllComponents
+    });
+
+    const headings = document.querySelectorAll('h2');
+
+    headings.forEach(h => {
+        let btn = h.querySelector('button');
+        let target = h.nextElementSibling;
+
+        btn.onclick = () => {
+            let expanded = btn.getAttribute('aria-expanded') === 'true';
+
+            btn.setAttribute('aria-expanded', !expanded);
+            target.hidden = expanded;
+        }
+    });
+
+    var totalCpu = 0;
+    var totalBufferIO = 0;
+    var totalOther = 0;
+
+    var dbTimeParse = function (startTime, endTime, dbTimeInputData) {
+
+        var dbTimeArray = [];
+
+        totalCpu = 0;
+        totalBufferIO = 0;
+        totalOther = 0;
+
+        if (dbTimeInputData.length > 0) {
+
+            var i1 = 0;
+
+            var w1 = 0;
+            var w2 = 0;
+            var w3 = 0;
+
+            var myObj = {
+                date: startTime
+                , 'CPU': w1
+                , 'Buffer IO': w3
+                , 'Other': w2 - w3 - w1
+                , total: w2
+            }
+            dbTimeArray.push(myObj);
+
+            startTime = dbTimeInputData[i1].date;
+
+            while ((startTime <= endTime) && (dbTimeInputData.length > i1)) {
+                while ((dbTimeInputData.length > i1) && (dbTimeInputData[i1].date.getTime() === startTime.getTime())) {
+                    switch (dbTimeInputData[i1].key) {
+                        case "CPU": w1 = dbTimeInputData[i1].value; break;
+                        case "Other Wait Time": w2 = dbTimeInputData[i1].value; break;
+                        case "Buffer IO": w3 = dbTimeInputData[i1].value; break;
+                    }
+                    i1 = i1 + 1;
+                }
+                var myObj = {
+                    date: startTime
+                    , 'CPU': w1
+                    , 'Buffer IO': w3
+                    , 'Other': w2
+                    , total: w1 + w2 + w3
+                }
+                dbTimeArray.push(myObj);
+
+                totalCpu += w1;
+                totalBufferIO += w3;
+                totalOther += w2;
+
+                w1 = 0;
+                w2 = 0;
+                w3 = 0;
+
+
+                if (dbTimeInputData.length > i1) {
+                    startTime = dbTimeInputData[i1].date;
+                }
+
+            }
+
+        }
+        return dbTimeArray
+    }
+
+    var svgStackedAreaDraw = function (svgWidth, svgHeight, inpArray, svgObjName, withLegend, chartTitle, chartSubTitle, minDate, maxDate, maxX, pKeys, pColors, pAxisName) {
+        var margin = { top: 100, right: 100, bottom: 30, left: 40 },
+            width = svgWidth - margin.left - margin.right,
+            height = svgHeight - margin.top - margin.bottom;
+        var x = d3.scaleTime().range([0, width]),
+            y = d3.scaleLinear().range([height, 0]),
+            z = pColors;
+
+        var stack = d3.stack();
+
+        var area = d3.area()
+            .x(function (d, i) { return x(d.data.date); })
+            .y0(function (d) { return y(d[0]); })
+            .y1(function (d) { return y(d[1]); })
+            .curve(d3.curveMonotoneX);
+
+        y.domain([0, maxX]).nice();
+        z.domain(pKeys);
+        stack.keys(pKeys);
+
+        var svgStackedArea = d3.select(svgObjName).append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom);
+
+        var g = svgStackedArea.append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        x.domain([minDate, maxDate]);
+
+        g.append("g")
+            .attr("class", "axis-grid")
+            .call(d3.axisLeft(y).tickSize(-width).tickFormat('').ticks(10));
+
+        var layer = g.selectAll(".layer")
+            .data(stack(inpArray))
+            .enter().append("g")
+            .attr("class", "layer");
+        layer.append("path")
+            .attr("class", "area")
+            .style("fill", function (d) { return z(d.key); })
+            .attr("d", area)
+            .on('mouseover', function (d, i) {
+                d3.select(this).transition()
+                    .duration('50')
+                    .attr('opacity', '.85');
+            })
+            .on('mouseout', function (d, i) {
+                d3.select(this).transition()
+                    .duration('50')
+                    .attr('opacity', '1');
+            });
+        g.append("g")
+            .attr("class", "axis axis--x")
+            .attr("transform", "translate(0, " + height + ")")
+            .call(d3.axisBottom(x));
+        g.append("g")
+            .attr("class", "axis axis--y")
+            .call(d3.axisLeft(y).ticks(null, "s"));
+        g.append("g")
+            .attr("class", "axis")
+            .call(d3.axisLeft(y).ticks(null, "s"))
+            .append("text")
+            .attr("x", 2)
+            .attr("y", y(y.ticks().pop()) + 0.5)
+            .attr("dy", "0.32em")
+            .attr("class", "chartColorLight")
+            .attr("text-anchor", "start")
+            .text(pAxisName);
+        g.append("text")
+            .attr("x", 0)
+            .attr("y", 0 - (margin.top / 2))
+            .attr("text-anchor", "left")
+            .attr("class", "chartColorDark")
+            .style("font-size", "26px")
+            .text(chartTitle);
+
+        g.append("text")
+            .attr("x", 0)
+            .attr("y", 0 - (margin.top / 4))
+            .attr("text-anchor", "left")
+            .style("font-size", "12px")
+            .text(chartSubTitle);
+
+        if (withLegend == 1) {
+            var legend = g.append("g")
+                .attr("font-size", "10px")
+                .attr("text-anchor", "begin")
+                .selectAll("g")
+                .data(pKeys.slice().reverse())
+                .enter().append("g")
+                .attr("transform", function (d, i) { return "translate(0," + i * 20 + ")"; });
+            legend.append("rect")
+                .attr("x", width + 15)
+                .attr("width", 13)
+                .attr("height", 13)
+                .attr('rx', 5)
+                .attr("fill", z);
+            legend.append("text")
+                .attr("x", width + 36)
+                .attr("y", 6.5)
+                .attr("dy", "0.32em")
+                .text(function (d) { return d; });
+
+        }
+        return svgStackedArea;
+    }
+
+    var svgBarChartDraw = function (svgWidth, svgHeight, statName, svgObjName, pColors, chartName, axisName) {
+        var margin = { top: 100, right: 20, bottom: 30, left: 40 },
+            width = svgWidth - margin.left - margin.right,
+            height = svgHeight - margin.top - margin.bottom;
+
+        var x = d3.scaleBand()
+            .rangeRound([0, width - 200])
+            .paddingInner(0.05)
+            .align(0.1);
+        var y = d3.scaleLinear().rangeRound([height, 0]);
+        var z = pColors;
+
+        var barChartData = statName;
+        var keys = barChartData.columns;
+
+        var stack = d3.stack();
+
+        var area = d3.area()
+            .x(function (d, i) { return x(d.data.date); })
+            .y0(function (d) { return y(d[0]); })
+            .y1(function (d) { return y(d[1]); })
+            .curve(d3.curveMonotoneX)
+            ;
+
+        x.domain(barChartData.map(function (d) { return d.series; }));
+        y.domain([0, 1.05 * d3.max(barChartData, function (d) { return d.total; })]).nice();
+        z.domain(keys);
+
+
+        var svgBarChart = d3.select(svgObjName).append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom);
+
+        var g = svgBarChart.append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        g.append("g")
+            .selectAll("g")
+            .data(d3.stack().keys(keys)(barChartData))
+            .enter().append("g")
+            .attr("fill", function (d) { return z(d.key); })
+            .selectAll("rect")
+            .data(function (d) { return d; })
+            .enter().append("rect")
+            .attr("x", function (d) { return x(d.data.series) + 3; })
+            .attr("y", function (d) { return y(d[1]); })
+            .attr('rx', 1.5)
+            .attr("height", function (d) { return y(d[0]) - y(d[1]); })
+            .attr("width", x.bandwidth())
+            .on('mouseover', function (d, i) {
+                d3.select(this).transition()
+                    .duration('50')
+                    .attr('opacity', '.85');
+            })
+            .on('mouseout', function (d, i) {
+                d3.select(this).transition()
+                    .duration('50')
+                    .attr('opacity', '1');
+            });
+
+        g.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(3, " + height + ")")
+            .call(d3.axisBottom(x));
+
+        g.append("g")
+            .attr("class", "axis")
+            .call(d3.axisLeft(y).ticks(null, "s"))
+            .append("text")
+            .attr("x", 2)
+            .attr("y", y(y.ticks().pop()) + 0.5)
+            .attr("dy", "0.32em")
+            .attr("fill", "#000")
+            .attr("text-anchor", "start")
+            .text(axisName);
+        g.append("text")
+            .attr("x", 0)
+            .attr("y", 0 - (margin.top / 2))
+            .attr("text-anchor", "left")
+            .attr("class", "chartColorDark")
+            .style("font-size", "26px")
+            .text(chartName);
+        var legend = g.append("g")
+            .attr("font-size", "10px")
+            .attr("text-anchor", "begin")
+            .selectAll("g")
+            .data(keys.slice().reverse())
+            .enter().append("g")
+            .attr("transform", function (d, i) { return "translate(0," + i * 20 + ")"; });
+        legend.append("rect")
+            .attr("x", width - 180)
+            .attr("width", 13)
+            .attr("height", 13)
+            .attr('rx', 5)
+            .attr("fill", z);
+        legend.append("text")
+            .attr("x", width - 160)
+            .attr("y", 6.5)
+            .attr("dy", "0.32em")
+            .text(function (d) { return d; });
+
+        return svgBarChart;
+    }
+
+    function getMaxDiffSqlStat(statName) {
+        var maxValue = d3.max(sqlStats[statName], function (d) { return d3.max([0, d[sqlStatsTableDetails[statName]["colDiff"]]]); });
+        if (maxValue == 0) { return 0.01 } else { return maxValue; }
+    }
+
+    function getMinDiffSqlStat(statName) {
+        var minValue = d3.min(sqlStats[statName], function (d) { return d3.min([d[sqlStatsTableDetails[statName]["colDiff"]], 0]); });
+        if (minValue == 0) { return 0.01 } else { return minValue }
+    }
+
+    function sqlTableSummaryText(statName) {
+        var outputString = percentFormat(d3.sum(sqlStats[statName], function (d) { return d[sqlStatsTableDetails[statName]["colShare"]]; })) + " of " + sqlStatsTableDetails[statName]["description"] + " is covered by TOP " +
+            timeFormat(d3.max(sqlStats[statName], function (d) { return d["RANK"]; })) + " SQLs found in query_store_runtime_stats view. ";
+
+        if (d3.sum(sqlStats[statName], function (d) { return d[sqlStatsTableDetails[statName]["colDiff"]]; }) > 0) {
+            outputString = outputString + sqlStatsTableDetails[statName]["description"] + " (TOP " + timeFormat(d3.max(sqlStats[statName], function (d) { return d["RANK"]; })) + " SQLs) has been increased by "
+                + outputFormat(sqlStatsTableDetails[statName]["colDiff"], d3.sum(sqlStats[statName], function (d) { return d[sqlStatsTableDetails[statName]["colDiff"]]; })) + " units (from "
+                + outputFormat(sqlStatsTableDetails[statName]["colDiff"], d3.sum(sqlStats[statName], function (d) { return d[sqlStatsTableDetails[statName]["colBaseline"]]; })) + " to "
+                + outputFormat(sqlStatsTableDetails[statName]["colDiff"], d3.sum(sqlStats[statName], function (d) { return d[sqlStatsTableDetails[statName]["colTestrun"]]; })) + " ).";
+            return outputString;
+        }
+        else {
+            outputString = outputString + sqlStatsTableDetails[statName]["description"] + " (TOP " + timeFormat(d3.max(sqlStats[statName], function (d) { return d["RANK"]; })) + " SQLs) has been decreased by "
+                + outputFormat(sqlStatsTableDetails[statName]["colDiff"], -1 * d3.sum(sqlStats[statName], function (d) { return d[sqlStatsTableDetails[statName]["colDiff"]]; })) + " units (from "
+                + outputFormat(sqlStatsTableDetails[statName]["colDiff"], d3.sum(sqlStats[statName], function (d) { return d[sqlStatsTableDetails[statName]["colBaseline"]]; })) + " to "
+                + outputFormat(sqlStatsTableDetails[statName]["colDiff"], d3.sum(sqlStats[statName], function (d) { return d[sqlStatsTableDetails[statName]["colTestrun"]]; })) + " ).";
+            return outputString;
+        }
+    }
+
+    function getColspan(pcolumn) {
+        if (sqlStatsHeaderColspan2.includes(pcolumn)) { return 2; };
+        if (sqlStatsHeaderColspan3.includes(pcolumn)) { return 3; };
+        if (sqlStatsHeaderColspan4.includes(pcolumn)) { return 4; };
+        if (sqlStatsHeaderColspan7.includes(pcolumn)) { return 7; };
+        return 1;
+    }
+
+    function drawTable(screenWidth, data, columns, header1, header2, tableName, svgName, summaryText, tableDescription) {
+
+        d3.select(svgName)
+            .append('svg')
+            .attr('width', screenWidth)
+            .attr('height', 50)
+            .append('g')
+            .attr("transform", "translate(" + 0 + "," + 0 + ")")
+            .append('text')
+            .attr('x', 20)
+            .attr('y', 40)
+            .attr("text-anchor", "mid")
+            .attr("font-size", "18px")
+            .attr("font-weight", "bold")
+            .attr("class", "chartColorDark")
+            .text(tableName);
+        d3.select(svgName)
+            .append('svg')
+            .attr('width', screenWidth)
+            .attr('height', 10)
+            .append('g')
+            .attr("transform", "translate(" + 0 + "," + 0 + ")")
+            .append('text')
+            .attr('x', 10)
+            .attr('y', 8)
+            .attr("text-anchor", "mid")
+            .attr("font-size", "10px")
+            .attr("font-weight", "bold")
+            .attr("class", "chartColorGrey")
+            .text(tableDescription);
+
+        var table = d3.select(svgName).append("table"),
+            thead = table.append("thead"),
+            tbody = table.append("tbody");
+        thead.append("tr")
+            .selectAll("th")
+            .data(header1)
+            .enter()
+            .append("th")
+            .attr("colspan", function (column) { return getColspan(column); })
+            .attr("rowspan", function (column) { return getColspan(column) === 1 ? 2 : 1; })
+            .text(function (column) { return column; });
+        thead.append("tr")
+            .selectAll("th")
+            .data(header2)
+            .enter()
+            .append("th")
+            .text(function (column) { return column; });
+
+        var rows = tbody.selectAll("tr")
+            .data(data)
+            .enter()
+            .append("tr");
+        var cells = rows.selectAll("td")
+            .data(function (row) {
+                return columns.map(function (column) {
+                    return {
+                        column: column,
+                        value: row[column]
+                    };
+                });
+            })
+            .enter()
+            .append("td")
+            .text(function (d) { return outputFormat(d.column, d.value); });
+        table.selectAll("tbody tr")
+            .sort(function (a, b) { return d3.ascending(a.RANK, b.RANK); });
+
+        d3.select(svgName)
+            .append('svg')
+            .attr('width', screenWidth)
+            .attr('height', 40)
+            .append('g')
+            .attr("transform", "translate(" + 0 + "," + 0 + ")")
+            .append('text')
+            .attr('x', 20)
+            .attr('y', 20)
+            .attr("text-anchor", "mid")
+            .attr("font-size", "12px")
+            .attr("class", "chartColorDark")
+            .text(summaryText);
+        return table;
+    }
+
+    function outputFormat(pcolumn, pvalue) {
+        if (timeFormatArray.includes(pcolumn)) { if (Math.abs(pvalue) > 999) { return execFormat(+pvalue); } else { return timeFormat(+pvalue); } };
+        if (execFormatArray.includes(pcolumn)) { if (Math.abs(pvalue) < 10) { return timeFormat(+pvalue); } else { return execFormat(+pvalue); } };
+        if (percentFormatArray.includes(pcolumn)) { return percentFormat(+pvalue); };
+        return pvalue;
+    }
+
+    function drawAllObjects(pScreenWidth) {
+        svgStackedAreaDraw(pScreenWidth, 380, dbTimeArrayBr, "#chartDbTime", 1, "Baseline", startTimeBr.toLocaleString('en-us', date_output), startTimeBr, finishTimeBr, maxDbTimeValue, dbTimeKeys, dbTimeColors, "Seconds");
+        svgStackedAreaDraw(pScreenWidth, 380, dbTimeArrayTr, "#chartDbTime", 1, "Test run", startTimeTr.toLocaleString('en-us', date_output), startTimeTr, finishTimeTr, maxDbTimeValue, dbTimeKeys, dbTimeColors, "Seconds");
+
+        if (waitClassGroups["DB Time"].columns) svgBarChartDraw(400, 450, waitClassGroups["DB Time"], "#chartMain", dbTimeColors, "DB Time", "Seconds");
+        if (waitClassGroups["Wait Classes"].columns) svgBarChartDraw(400, 450, waitClassGroups["Wait Classes"], "#chartMain", waitClassColors, "Wait Classes", "Seconds");
+
+        ["CPU", "Buffer IO", "Worker Thread", "Lock", "Latch", "Buffer Latch", "Preemptive", "Tran Log IO", "Network IO", "Memory", "Other Disk IO", "Other"].forEach(function (d) {
+            if (waitClassGroups[d].columns && ((waitClassGroups[d][0].total + waitClassGroups[d][1].total) > 0)) svgBarChartDraw(400, 450, waitClassGroups[d], "#chartWaitClasses", cat20Colors, d, "Seconds");
+
+        });
+
+        sqlStatsChartDetails.forEach(function (d) {
+            if ((sqlStatsGroups[d.chartId][0].total + sqlStatsGroups[d.chartId][1].total) > 0) svgBarChartDraw(400, 450, sqlStatsGroups[d.chartId], "#chartSqlStatCharts", cat20Colors, d.chartName, d.axisName);
+        });
+
+        sqlStatsTables.forEach(function (d) {
+            var tempTable = drawTable(pScreenWidth, sqlStats[d], sqlStatsCols[d], sqlStatsColsHeader1[d], sqlStatsColsHeader2[d], sqlStatsTableDetails[d]["name"], "#chartSqlStatTables", sqlTableSummaryText(d), tableDescriptionText);
+            sqlStatsTables[d] = tempTable;
+        });
+
+        var dbSummaryTable = drawTable(pScreenWidth, sqlStats["DB_SUMMARY"], sqlStatsCols["DB_SUMMARY"], sqlStatsColsHeader1["DB_SUMMARY"], sqlStatsColsHeader2["DB_SUMMARY"], sqlStatsTableDetails["DB_SUMMARY"]["name"], "#chartMain", "", "");
+
+        var sqlTextTable = drawTable(pScreenWidth, sqlStats["SQL_TEXT"], sqlStatsCols["SQL_TEXT"], sqlStatsColsHeader1["SQL_TEXT"], sqlStatsColsHeader2["SQL_TEXT"], sqlStatsTableDetails["SQL_TEXT"]["name"], "#chartSqlText", "", "");
+
+        sqlStatsTables.forEach(function (x) {
+            sqlStatsTables[x].selectAll('td:nth-child(9)').style("background-color", function (d) { if (+d.value > 0) { return colorInterpolateRed((+d.value) / getMaxDiffSqlStat(x) / 2); } else { return colorInterpolateGreen((+d.value) / getMinDiffSqlStat(x) / 2); }; });
+            sqlStatsTables[x].selectAll('td:nth-child(13)').style("background-color", function (d) { return colorScale((+d.value)) });
+        });
+
+    }
+
+    var csvDbTimeBr = "date,key,value\n";
+
+    var csvDbTimeTr = "date,key,value\n";
+
+    var csvWaitEvents = "wait_class,wait_event,tst_before,tst_after\n";
+
+    var csvSqlStatsTable = "STATISTIC,RANK,PLAN_ID,QUERY_PLAN_HASH,QUERY_ID,QUERY_HASH,SQL_TYPE,EXECUTIONS_T,DURATION_T,CPU_TIME_T,WAIT_TIME_T,LOGICAL_IO_READS_T,LOGICAL_IO_WRITES_T,PHYSICAL_IO_READS_T,DOP_T,QUERY_MAX_USED_MEMORY_T,ROW_COUNT_T,NUM_PHYSICAL_IO_READS_T,LOG_BYTES_USED_T,TEMPDB_SPACE_USED_T,PAGE_SERVER_IO_READS_T,EXECUTIONS_B,DURATION_B,CPU_TIME_B,WAIT_TIME_B,LOGICAL_IO_READS_B,LOGICAL_IO_WRITES_B,PHYSICAL_IO_READS_B,DOP_B,QUERY_MAX_USED_MEMORY_B,ROW_COUNT_B,NUM_PHYSICAL_IO_READS_B,LOG_BYTES_USED_B,TEMPDB_SPACE_USED_B,PAGE_SERVER_IO_READS_B,EXECUTIONS_S,DURATION_S,CPU_TIME_S,WAIT_TIME_S,LOGICAL_IO_READS_S,LOGICAL_IO_WRITES_S,PHYSICAL_IO_READS_S,DOP_S,QUERY_MAX_USED_MEMORY_S,ROW_COUNT_S,NUM_PHYSICAL_IO_READS_S,LOG_BYTES_USED_S,TEMPDB_SPACE_USED_S,PAGE_SERVER_IO_READS_S\n";
+
+    var csvDbSummary = "PERIOD,DBSERVER,DBNAME,START_INTERVAL_ID,FINISH_INTERVAL_ID,START_INTERVAL_TIME,FINISH_INTERVAL_TIME,DURATION\n";
+
+    var csvSqlStatsChart = "stat_name,sql_type,value_b,value_t\n";
+
+    var csvSqlText = "SQL_ID!@#!SQL_TYPE!@#!SQL_TEXT\n";
