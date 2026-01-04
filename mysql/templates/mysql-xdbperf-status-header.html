@@ -1,12 +1,12 @@
 <!-- 
-    Copyright 2016-2025 Taras Guliak XDBTIME 
+    Copyright 2016-2026 Taras Guliak XDBTIME Community Edition for MySQL
     All rights reserved.
 
     ========================================
     
     D3
     
-    Copyright 2010-2025 Mike Bostock
+    Copyright 2010-2023 Mike Bostock
 
     Permission to use, copy, modify, and/or distribute this software for any purpose
     with or without fee is hereby granted, provided that the above copyright notice
@@ -133,16 +133,28 @@
 
         td {
             border-bottom: 0.5px solid #ddd;
+            border-top-left-radius: 1.5px;
+            border-top-right-radius: 1.5px;
+            border-bottom-left-radius: 1.5px;
+            border-bottom-right-radius: 1.5px;
         }
 
         th {
             font-weight: bold;
             background-color: #999;
             color: white;
+            border-top-left-radius: 1.5px;
+            border-top-right-radius: 1.5px;
+            border-bottom-left-radius: 1.5px;
+            border-bottom-right-radius: 1.5px;
         }
 
         tr:hover {
             background-color: #f5f5f5;
+            border-top-left-radius: 1.5px;
+            border-top-right-radius: 1.5px;
+            border-bottom-left-radius: 1.5px;
+            border-bottom-right-radius: 1.5px;
         }
 
         .header {
@@ -158,115 +170,121 @@
 </head>
 
 <body>
-    <header class="header">
-        <a href="https://www.xdbtime.com">
-            <img src="https://www.xdbtime.com/images/logo-white.png" alt="" height="25" />
-        </a>
-    </header>
-    <div class="main-wrapper" id="main-wrapper">
+<header class="header">
+    <a href="https://www.xdbtime.com">
+        <img src="https://www.xdbtime.com/images/logo-white.png" alt="" height="25"/>
+    </a>
+</header>
+<div class="main-wrapper" id="main-wrapper">
 
 
-        <h1>Database Performance Report - MySQL</h1>
-        <div id="chart1"> </div>
-        <main>
-            <h2>
-                <button aria-expanded="false">
-                    Global Status
-                    <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
-                        <rect class="vert" height="8" width="2" y="1" x="4" />
-                        <rect height="2" width="8" y="4" x="1" />
-                    </svg>
-                </button>
-            </h2>
-            <div id="chartGlobalStatus" hidden>
-                <p>Global Status is based on global_status view. </p>
-            </div>
-            <h2>
-                <button aria-expanded="false">
-                    File Summary
-                    <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
-                        <rect class="vert" height="8" width="2" y="1" x="4" />
-                        <rect height="2" width="8" y="4" x="1" />
-                    </svg>
-                </button>
-            </h2>
-            <div id="chartFileSummary" hidden>
-                <p>File Summary tables are based on file_summary_by_event_name view </p>
-            </div>
-            <h2>
-                <button aria-expanded="false">
-                    Waits Summary
-                    <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
-                        <rect class="vert" height="8" width="2" y="1" x="4" />
-                        <rect height="2" width="8" y="4" x="1" />
-                    </svg>
-                </button>
-            </h2>
-            <div id="chartWaitsSummary" hidden>
-                <p>Waits Summary charts are based on events_waits_summary_global_by_event_name view </p>
-            </div>
-            <h2>
-                <button aria-expanded="false">
-                    Stages Summary
-                    <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
-                        <rect class="vert" height="8" width="2" y="1" x="4" />
-                        <rect height="2" width="8" y="4" x="1" />
-                    </svg>
-                </button>
-            </h2>
-            <div id="chartStagesSummary" hidden>
-                <p>Stages Summary charts are based on events_stages_summary_global_by_event_name view </p>
-            </div>
-            <h2>
-                <button aria-expanded="false">
-                    Statements Summary
-                    <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
-                        <rect class="vert" height="8" width="2" y="1" x="4" />
-                        <rect height="2" width="8" y="4" x="1" />
-                    </svg>
-                </button>
-            </h2>
-            <div id="chartStatementsSummary" hidden>
-                <p>Statements Summary charts are based on events_statements_summary_global_by_event_name view </p>
-            </div>
-            <h2>
-                <button aria-expanded="false">
-                    SQL Statistics Charts
-                    <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
-                        <rect class="vert" height="8" width="2" y="1" x="4" />
-                        <rect height="2" width="8" y="4" x="1" />
-                    </svg>
-                </button>
-            </h2>
-            <div id="chart5" hidden>
-                <p>SQL Statistics charts are based on events_statements_summary_by_digest. SQL statistics are grouped by DIGEST and SCHEMA_NAME. </p>
-            </div>
-            <h2>
-                <button aria-expanded="false">
-                    SQL Statistics Tables
-                    <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
-                        <rect class="vert" height="8" width="2" y="1" x="4" />
-                        <rect height="2" width="8" y="4" x="1" />
-                    </svg>
-                </button>
-            </h2>
-            <div id="chart6" hidden>
-                <p>SQL Statistics charts are based on events_statements_summary_by_digest. SQL statistics are grouped by DIGEST and SCHEMA_NAME.</p>
-            </div>
-            <h2>
-                <button aria-expanded="false">
-                    SQL Text
-                    <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
-                        <rect class="vert" height="8" width="2" y="1" x="4" />
-                        <rect height="2" width="8" y="4" x="1" />
-                    </svg>
-                </button>
-            </h2>
-            <div id="chartSqlText" hidden>
-                <p>SQL Text is extracted from events_statements_summary_by_digest. </p>
-            </div>
-        </main>
-    </div>
+    <h1>Database Performance Report</h1>
+    <h5>
+        <span style="text-align:left;">for MySQL (using Performance Schema)</span>
+        <span style="float:right;">v2025.12</span>
+    </h5>
+    <div id="chart1"></div>
+    <main>
+        <h2>
+            <button aria-expanded="false">
+                Global Status
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
+                    <rect class="vert" height="8" width="2" y="1" x="4"/>
+                    <rect height="2" width="8" y="4" x="1"/>
+                </svg>
+            </button>
+        </h2>
+        <div id="chartGlobalStatus" hidden>
+            <p>Global Status is based on global_status view. </p>
+        </div>
+        <h2>
+            <button aria-expanded="false">
+                File Summary
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
+                    <rect class="vert" height="8" width="2" y="1" x="4"/>
+                    <rect height="2" width="8" y="4" x="1"/>
+                </svg>
+            </button>
+        </h2>
+        <div id="chartFileSummary" hidden>
+            <p>File Summary tables are based on file_summary_by_event_name view </p>
+        </div>
+        <h2>
+            <button aria-expanded="false">
+                Waits Summary
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
+                    <rect class="vert" height="8" width="2" y="1" x="4"/>
+                    <rect height="2" width="8" y="4" x="1"/>
+                </svg>
+            </button>
+        </h2>
+        <div id="chartWaitsSummary" hidden>
+            <p>Waits Summary charts are based on events_waits_summary_global_by_event_name view </p>
+        </div>
+        <h2>
+            <button aria-expanded="false">
+                Stages Summary
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
+                    <rect class="vert" height="8" width="2" y="1" x="4"/>
+                    <rect height="2" width="8" y="4" x="1"/>
+                </svg>
+            </button>
+        </h2>
+        <div id="chartStagesSummary" hidden>
+            <p>Stages Summary charts are based on events_stages_summary_global_by_event_name view </p>
+        </div>
+        <h2>
+            <button aria-expanded="false">
+                Statements Summary
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
+                    <rect class="vert" height="8" width="2" y="1" x="4"/>
+                    <rect height="2" width="8" y="4" x="1"/>
+                </svg>
+            </button>
+        </h2>
+        <div id="chartStatementsSummary" hidden>
+            <p>Statements Summary charts are based on events_statements_summary_global_by_event_name view </p>
+        </div>
+        <h2>
+            <button aria-expanded="false">
+                SQL Statistics Charts
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
+                    <rect class="vert" height="8" width="2" y="1" x="4"/>
+                    <rect height="2" width="8" y="4" x="1"/>
+                </svg>
+            </button>
+        </h2>
+        <div id="chart5" hidden>
+            <p>SQL Statistics charts are based on events_statements_summary_by_digest. SQL statistics are grouped by
+                DIGEST and SCHEMA_NAME. </p>
+        </div>
+        <h2>
+            <button aria-expanded="false">
+                SQL Statistics Tables
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
+                    <rect class="vert" height="8" width="2" y="1" x="4"/>
+                    <rect height="2" width="8" y="4" x="1"/>
+                </svg>
+            </button>
+        </h2>
+        <div id="chart6" hidden>
+            <p>SQL Statistics charts are based on events_statements_summary_by_digest. SQL statistics are grouped by
+                DIGEST and SCHEMA_NAME.</p>
+        </div>
+        <h2>
+            <button aria-expanded="false">
+                SQL Text
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
+                    <rect class="vert" height="8" width="2" y="1" x="4"/>
+                    <rect height="2" width="8" y="4" x="1"/>
+                </svg>
+            </button>
+        </h2>
+        <div id="chartSqlText" hidden>
+            <p>SQL Text is extracted from events_statements_summary_by_digest. </p>
+        </div>
+    </main>
+</div>
 </body>
 
 </html>
@@ -346,7 +364,17 @@
         layer.append("path")
             .attr("class", "area")
             .style("fill", function (d) { return z(d.key); })
-            .attr("d", area);
+            .attr("d", area)
+            .on('mouseover', function (d, i) {
+                d3.select(this).transition()
+                    .duration('50')
+                    .attr('opacity', '.85');
+            })
+            .on('mouseout', function (d, i) {
+                d3.select(this).transition()
+                    .duration('50')
+                    .attr('opacity', '1');
+            });
         g.append("g")
             .attr("class", "axis axis--x")
             .attr("transform", "translate(0, " + height + ")")
@@ -391,6 +419,7 @@
                 .attr("x", width + 15)
                 .attr("width", 13)
                 .attr("height", 13)
+                .attr('rx', 5)
                 .attr("fill", z);
             legend.append("text")
                 .attr("x", width + 36)
@@ -437,7 +466,17 @@
         layer.append("path")
             .attr("class", "area")
             .style("fill", function (d) { return z(d.key); })
-            .attr("d", area);
+            .attr("d", area)
+            .on('mouseover', function (d, i) {
+                d3.select(this).transition()
+                    .duration('50')
+                    .attr('opacity', '.85');
+            })
+            .on('mouseout', function (d, i) {
+                d3.select(this).transition()
+                    .duration('50')
+                    .attr('opacity', '1');
+            });
         g.append("g")
             .attr("class", "axis axis--x")
             .attr("transform", "translate(0, " + height + ")")
@@ -473,6 +512,7 @@
                 .attr("x", width + 20)
                 .attr("width", 10)
                 .attr("height", 10)
+                .attr('rx', 5)
                 .attr("fill", z);
             legend.append("text")
                 .attr("x", width + 36)
@@ -533,14 +573,25 @@
             .selectAll("rect")
             .data(function (d) { return d; })
             .enter().append("rect")
-            .attr("x", function (d) { return x(d.data.series); })
+            .attr("x", function (d) { return x(d.data.series) + 3; })
             .attr("y", function (d) { return y(d[1]); })
+            .attr('rx', 1.5)
             .attr("height", function (d) { return y(d[0]) - y(d[1]); })
-            .attr("width", x.bandwidth());
+            .attr("width", x.bandwidth())
+            .on('mouseover', function (d, i) {
+                d3.select(this).transition()
+                    .duration('50')
+                    .attr('opacity', '.85');
+            })
+            .on('mouseout', function (d, i) {
+                d3.select(this).transition()
+                    .duration('50')
+                    .attr('opacity', '1');
+            });
 
         g.append("g")
             .attr("class", "axis")
-            .attr("transform", "translate(0, " + height + ")")
+            .attr("transform", "translate(3, " + height + ")")
             .call(d3.axisBottom(x));
 
 
@@ -572,6 +623,7 @@
             .attr("x", width - 180)
             .attr("width", 13)
             .attr("height", 13)
+            .attr('rx', 5)
             .attr("fill", z);
         legend.append("text")
             .attr("x", width - 160)
@@ -717,23 +769,23 @@
         
 
         ["io/file", "io/socket", "io/table", "io/aurora_redo_log_flus", "lock/metadata", "lock/table", "synch/cond", "synch/mutex", "synch/rwlock", "synch/sxlock"].forEach(function (d) {
-            if (waitsSummaryGroupsMySQL[d].columns) svgBarChartDraw(400, 450, waitsSummaryGroupsMySQL[d], "#chartWaitsSummary", cat20Colors, d, "Seconds");
+            if (waitsSummaryGroupsMySQL[d].columns  && waitsSummaryGroupsMySQL[d][0].total > 0) svgBarChartDraw(400, 450, waitsSummaryGroupsMySQL[d], "#chartWaitsSummary", cat20Colors, d, "Seconds");
 
         });
 
         ["sql", "innodb"].forEach(function (d) {
-            if (stagesSummaryGroupsMySQL[d].columns) svgBarChartDraw(400, 450, stagesSummaryGroupsMySQL[d], "#chartStagesSummary", cat20Colors, d, "Seconds");
+            if (stagesSummaryGroupsMySQL[d].columns  && stagesSummaryGroupsMySQL[d][0].total > 0) svgBarChartDraw(400, 450, stagesSummaryGroupsMySQL[d], "#chartStagesSummary", cat20Colors, d, "Seconds");
 
         });
 
         ["sql", "com", "sp", "scheduler"].forEach(function (d) {
-            if (statementsSummaryGroupsMySQL[d].columns) svgBarChartDraw(400, 450, statementsSummaryGroupsMySQL[d], "#chartStatementsSummary", cat20Colors, d, "Seconds");
+            if (statementsSummaryGroupsMySQL[d].columns  && statementsSummaryGroupsMySQL[d][0].total > 0) svgBarChartDraw(400, 450, statementsSummaryGroupsMySQL[d], "#chartStatementsSummary", cat20Colors, d, "Seconds");
 
         });
 
 
         sqlStatsChartDetailsMySQL.forEach(function (d) {
-            svgBarChartDraw(400, 450, sqlStatsGroupsMySQL[d.chartId], "#chart5", cat20Colors, d.chartName, d.axisName);
+           if (sqlStatsGroupsMySQL[d.chartId][0].total > 0) svgBarChartDraw(400, 450, sqlStatsGroupsMySQL[d.chartId], "#chart5", cat20Colors, d.chartName, d.axisName);
         });
 
 

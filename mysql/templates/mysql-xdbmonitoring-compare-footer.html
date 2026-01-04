@@ -1,4 +1,4 @@
-// Copyright 2016-2025 Taras Guliak XDBTIME
+// Copyright 2016-2026 Taras Guliak XDBTIME Community Edition for MySQL
 // All rights reserved.
 
 var timeFormatDMY = d3.timeParse("%d/%m/%Y");
@@ -26,7 +26,7 @@ var pointB = "Test Run";
 
 var waitsSummaryDataMySQL = d3.csvParse(csvWaitsSummaryMySQL);
 
-var waitsSummaryGroupsMySQL = {
+var waitsSummaryGroups = {
     "io/file":[{series:pointA, total:0},{series:pointB, total:0}]
     ,"io/socket":[{series:pointA, total:0},{series:pointB, total:0}]
     ,"io/table":[{series:pointA, total:0},{series:pointB, total:0}]
@@ -46,28 +46,28 @@ d.tst_after = +d.tst_after;
 });
 
 for (i = 0, t = 0; i < waitsSummaryDataMySQL.length; ++i) {
-waitsSummaryGroupsMySQL[waitsSummaryDataMySQL[i].wait_class][0][waitsSummaryDataMySQL[i].wait_event] = waitsSummaryDataMySQL[i].tst_before;
-waitsSummaryGroupsMySQL[waitsSummaryDataMySQL[i].wait_class][0]["total"] += waitsSummaryDataMySQL[i].tst_before;
-waitsSummaryGroupsMySQL[waitsSummaryDataMySQL[i].wait_class][1][waitsSummaryDataMySQL[i].wait_event] = waitsSummaryDataMySQL[i].tst_after;
-waitsSummaryGroupsMySQL[waitsSummaryDataMySQL[i].wait_class][1]["total"] += waitsSummaryDataMySQL[i].tst_after;
+waitsSummaryGroups[waitsSummaryDataMySQL[i].wait_class][0][waitsSummaryDataMySQL[i].wait_event] = waitsSummaryDataMySQL[i].tst_before;
+waitsSummaryGroups[waitsSummaryDataMySQL[i].wait_class][0]["total"] += waitsSummaryDataMySQL[i].tst_before;
+waitsSummaryGroups[waitsSummaryDataMySQL[i].wait_class][1][waitsSummaryDataMySQL[i].wait_event] = waitsSummaryDataMySQL[i].tst_after;
+waitsSummaryGroups[waitsSummaryDataMySQL[i].wait_class][1]["total"] += waitsSummaryDataMySQL[i].tst_after;
 
 
-if (!waitsSummaryGroupsMySQL[waitsSummaryDataMySQL[i].wait_class].columns) waitsSummaryGroupsMySQL[waitsSummaryDataMySQL[i].wait_class].columns = [];
-waitsSummaryGroupsMySQL[waitsSummaryDataMySQL[i].wait_class].columns.push(waitsSummaryDataMySQL[i].wait_event);
+if (!waitsSummaryGroups[waitsSummaryDataMySQL[i].wait_class].columns) waitsSummaryGroups[waitsSummaryDataMySQL[i].wait_class].columns = [];
+waitsSummaryGroups[waitsSummaryDataMySQL[i].wait_class].columns.push(waitsSummaryDataMySQL[i].wait_event);
 }
 
 
-waitsSummaryGroupsMySQL["Wait Classes"].columns = [];
+waitsSummaryGroups["Wait Classes"].columns = [];
 
 ["io/file", "io/socket", "io/table", "io/aurora_redo_log_flus", "lock/metadata", "lock/table", "synch/cond", "synch/mutex", "synch/rwlock", "synch/sxlock"].forEach(function (d) {
 
-waitsSummaryGroupsMySQL["Wait Classes"][0][d] = waitsSummaryGroupsMySQL[d][0]["total"];
-waitsSummaryGroupsMySQL["Wait Classes"][0]["total"] += waitsSummaryGroupsMySQL[d][0]["total"];
-waitsSummaryGroupsMySQL["Wait Classes"][1][d] = waitsSummaryGroupsMySQL[d][1]["total"];
-waitsSummaryGroupsMySQL["Wait Classes"][1]["total"] += waitsSummaryGroupsMySQL[d][1]["total"];
+waitsSummaryGroups["Wait Classes"][0][d] = waitsSummaryGroups[d][0]["total"];
+waitsSummaryGroups["Wait Classes"][0]["total"] += waitsSummaryGroups[d][0]["total"];
+waitsSummaryGroups["Wait Classes"][1][d] = waitsSummaryGroups[d][1]["total"];
+waitsSummaryGroups["Wait Classes"][1]["total"] += waitsSummaryGroups[d][1]["total"];
 
 
-waitsSummaryGroupsMySQL["Wait Classes"].columns.push(d);
+waitsSummaryGroups["Wait Classes"].columns.push(d);
 
 });
 
@@ -75,7 +75,7 @@ waitsSummaryGroupsMySQL["Wait Classes"].columns.push(d);
 
 var stagesSummaryDataMySQL = d3.csvParse(csvStagesSummaryMySQL);
 
-var stagesSummaryGroupsMySQL = {
+var stagesSummaryGroups = {
     "sql":[{series:pointA, total:0},{series:pointB, total:0}]
     ,"innodb":[{series:pointA, total:0},{series:pointB, total:0}]
     ,"Wait Classes":[{series:pointA, total:0},{series:pointB, total:0}]
@@ -88,28 +88,28 @@ d.tst_after = +d.tst_after;
 });
 
 for (i = 0, t = 0; i < stagesSummaryDataMySQL.length; ++i) {
-stagesSummaryGroupsMySQL[stagesSummaryDataMySQL[i].wait_class][0][stagesSummaryDataMySQL[i].wait_event] = stagesSummaryDataMySQL[i].tst_before;
-stagesSummaryGroupsMySQL[stagesSummaryDataMySQL[i].wait_class][0]["total"] += stagesSummaryDataMySQL[i].tst_before;
-stagesSummaryGroupsMySQL[stagesSummaryDataMySQL[i].wait_class][1][stagesSummaryDataMySQL[i].wait_event] = stagesSummaryDataMySQL[i].tst_after;
-stagesSummaryGroupsMySQL[stagesSummaryDataMySQL[i].wait_class][1]["total"] += stagesSummaryDataMySQL[i].tst_after;
+stagesSummaryGroups[stagesSummaryDataMySQL[i].wait_class][0][stagesSummaryDataMySQL[i].wait_event] = stagesSummaryDataMySQL[i].tst_before;
+stagesSummaryGroups[stagesSummaryDataMySQL[i].wait_class][0]["total"] += stagesSummaryDataMySQL[i].tst_before;
+stagesSummaryGroups[stagesSummaryDataMySQL[i].wait_class][1][stagesSummaryDataMySQL[i].wait_event] = stagesSummaryDataMySQL[i].tst_after;
+stagesSummaryGroups[stagesSummaryDataMySQL[i].wait_class][1]["total"] += stagesSummaryDataMySQL[i].tst_after;
 
 
-if (!stagesSummaryGroupsMySQL[stagesSummaryDataMySQL[i].wait_class].columns) stagesSummaryGroupsMySQL[stagesSummaryDataMySQL[i].wait_class].columns = [];
-stagesSummaryGroupsMySQL[stagesSummaryDataMySQL[i].wait_class].columns.push(stagesSummaryDataMySQL[i].wait_event);
+if (!stagesSummaryGroups[stagesSummaryDataMySQL[i].wait_class].columns) stagesSummaryGroups[stagesSummaryDataMySQL[i].wait_class].columns = [];
+stagesSummaryGroups[stagesSummaryDataMySQL[i].wait_class].columns.push(stagesSummaryDataMySQL[i].wait_event);
 }
 
 
-stagesSummaryGroupsMySQL["Wait Classes"].columns = [];
+stagesSummaryGroups["Wait Classes"].columns = [];
 
 ["sql", "innodb"].forEach(function (d) {
 
-stagesSummaryGroupsMySQL["Wait Classes"][0][d] = stagesSummaryGroupsMySQL[d][0]["total"];
-stagesSummaryGroupsMySQL["Wait Classes"][0]["total"] += stagesSummaryGroupsMySQL[d][0]["total"];
-stagesSummaryGroupsMySQL["Wait Classes"][1][d] = stagesSummaryGroupsMySQL[d][1]["total"];
-stagesSummaryGroupsMySQL["Wait Classes"][1]["total"] += stagesSummaryGroupsMySQL[d][1]["total"];
+stagesSummaryGroups["Wait Classes"][0][d] = stagesSummaryGroups[d][0]["total"];
+stagesSummaryGroups["Wait Classes"][0]["total"] += stagesSummaryGroups[d][0]["total"];
+stagesSummaryGroups["Wait Classes"][1][d] = stagesSummaryGroups[d][1]["total"];
+stagesSummaryGroups["Wait Classes"][1]["total"] += stagesSummaryGroups[d][1]["total"];
 
 
-stagesSummaryGroupsMySQL["Wait Classes"].columns.push(d);
+stagesSummaryGroups["Wait Classes"].columns.push(d);
 
 });
 
@@ -117,7 +117,7 @@ stagesSummaryGroupsMySQL["Wait Classes"].columns.push(d);
 
 var statementsSummaryDataMySQL = d3.csvParse(csvStatementsSummaryMySQL);
 
-var statementsSummaryGroupsMySQL = {
+var statementsSummaryGroups = {
     "sql":[{series:pointA, total:0},{series:pointB, total:0}]
     ,"sp":[{series:pointA, total:0},{series:pointB, total:0}]
     ,"com":[{series:pointA, total:0},{series:pointB, total:0}]
@@ -132,28 +132,28 @@ d.tst_after = +d.tst_after;
 });
 
 for (i = 0, t = 0; i < statementsSummaryDataMySQL.length; ++i) {
-statementsSummaryGroupsMySQL[statementsSummaryDataMySQL[i].wait_class][0][statementsSummaryDataMySQL[i].wait_event] = statementsSummaryDataMySQL[i].tst_before;
-statementsSummaryGroupsMySQL[statementsSummaryDataMySQL[i].wait_class][0]["total"] += statementsSummaryDataMySQL[i].tst_before;
-statementsSummaryGroupsMySQL[statementsSummaryDataMySQL[i].wait_class][1][statementsSummaryDataMySQL[i].wait_event] = statementsSummaryDataMySQL[i].tst_after;
-statementsSummaryGroupsMySQL[statementsSummaryDataMySQL[i].wait_class][1]["total"] += statementsSummaryDataMySQL[i].tst_after;
+statementsSummaryGroups[statementsSummaryDataMySQL[i].wait_class][0][statementsSummaryDataMySQL[i].wait_event] = statementsSummaryDataMySQL[i].tst_before;
+statementsSummaryGroups[statementsSummaryDataMySQL[i].wait_class][0]["total"] += statementsSummaryDataMySQL[i].tst_before;
+statementsSummaryGroups[statementsSummaryDataMySQL[i].wait_class][1][statementsSummaryDataMySQL[i].wait_event] = statementsSummaryDataMySQL[i].tst_after;
+statementsSummaryGroups[statementsSummaryDataMySQL[i].wait_class][1]["total"] += statementsSummaryDataMySQL[i].tst_after;
 
 
-if (!statementsSummaryGroupsMySQL[statementsSummaryDataMySQL[i].wait_class].columns) statementsSummaryGroupsMySQL[statementsSummaryDataMySQL[i].wait_class].columns = [];
-statementsSummaryGroupsMySQL[statementsSummaryDataMySQL[i].wait_class].columns.push(statementsSummaryDataMySQL[i].wait_event);
+if (!statementsSummaryGroups[statementsSummaryDataMySQL[i].wait_class].columns) statementsSummaryGroups[statementsSummaryDataMySQL[i].wait_class].columns = [];
+statementsSummaryGroups[statementsSummaryDataMySQL[i].wait_class].columns.push(statementsSummaryDataMySQL[i].wait_event);
 }
 
 
-statementsSummaryGroupsMySQL["Wait Classes"].columns = [];
+statementsSummaryGroups["Wait Classes"].columns = [];
 
 ["sql", "sp", "com", "scheduler"].forEach(function (d) {
 
-statementsSummaryGroupsMySQL["Wait Classes"][0][d] = statementsSummaryGroupsMySQL[d][0]["total"];
-statementsSummaryGroupsMySQL["Wait Classes"][0]["total"] += statementsSummaryGroupsMySQL[d][0]["total"];
-statementsSummaryGroupsMySQL["Wait Classes"][1][d] = statementsSummaryGroupsMySQL[d][1]["total"];
-statementsSummaryGroupsMySQL["Wait Classes"][1]["total"] += statementsSummaryGroupsMySQL[d][1]["total"];
+statementsSummaryGroups["Wait Classes"][0][d] = statementsSummaryGroups[d][0]["total"];
+statementsSummaryGroups["Wait Classes"][0]["total"] += statementsSummaryGroups[d][0]["total"];
+statementsSummaryGroups["Wait Classes"][1][d] = statementsSummaryGroups[d][1]["total"];
+statementsSummaryGroups["Wait Classes"][1]["total"] += statementsSummaryGroups[d][1]["total"];
 
 
-statementsSummaryGroupsMySQL["Wait Classes"].columns.push(d);
+statementsSummaryGroups["Wait Classes"].columns.push(d);
 
 });
 
@@ -166,7 +166,7 @@ d.value_b = +d.value_b;
 d.value_t = +d.value_t;
 });
 
-var sqlStatsGroupsMySQL = {
+var sqlStatsGroups = {
     "SQL_TYPE":[{series:pointA,total:0},{series:pointB,total:0}]
     ,"LOCK_TIME":[{series:pointA,total:0},{series:pointB,total:0}]
     ,"ERRORS":[{series:pointA,total:0},{series:pointB,total:0}]
@@ -191,7 +191,7 @@ var sqlStatsGroupsMySQL = {
     ,"NO_GOOD_INDEX_USED":[{series:pointA,total:0},{series:pointB,total:0}]
 };
 
-var sqlStatsChartDetailsMySQL = [
+var sqlStatsChartDetails = [
 { chartId: "SQL_TYPE", chartName: "SQL TYPE", axisName: "Count" }
 , { chartId: "EXECUTIONS", chartName: "EXECUTIONS", axisName: "Count" }
 , { chartId: "TIMER_WAIT", chartName: "TIMER WAIT", axisName: "Seconds" }
@@ -217,20 +217,20 @@ var sqlStatsChartDetailsMySQL = [
 ];
 
 for (i = 0, t = 0; i < dataSqlStatsChartMySQL.length; ++i) {
-sqlStatsGroupsMySQL[dataSqlStatsChartMySQL[i].stat_name][0][dataSqlStatsChartMySQL[i].sql_type] = dataSqlStatsChartMySQL[i].value_b;
-sqlStatsGroupsMySQL[dataSqlStatsChartMySQL[i].stat_name][0]["total"] += dataSqlStatsChartMySQL[i].value_b;
-sqlStatsGroupsMySQL[dataSqlStatsChartMySQL[i].stat_name][1][dataSqlStatsChartMySQL[i].sql_type] = dataSqlStatsChartMySQL[i].value_t;
-sqlStatsGroupsMySQL[dataSqlStatsChartMySQL[i].stat_name][1]["total"] += dataSqlStatsChartMySQL[i].value_t;
+sqlStatsGroups[dataSqlStatsChartMySQL[i].stat_name][0][dataSqlStatsChartMySQL[i].sql_type] = dataSqlStatsChartMySQL[i].value_b;
+sqlStatsGroups[dataSqlStatsChartMySQL[i].stat_name][0]["total"] += dataSqlStatsChartMySQL[i].value_b;
+sqlStatsGroups[dataSqlStatsChartMySQL[i].stat_name][1][dataSqlStatsChartMySQL[i].sql_type] = dataSqlStatsChartMySQL[i].value_t;
+sqlStatsGroups[dataSqlStatsChartMySQL[i].stat_name][1]["total"] += dataSqlStatsChartMySQL[i].value_t;
 
-if (!sqlStatsGroupsMySQL[dataSqlStatsChartMySQL[i].stat_name].columns) sqlStatsGroupsMySQL[dataSqlStatsChartMySQL[i].stat_name].columns = [];
-sqlStatsGroupsMySQL[dataSqlStatsChartMySQL[i].stat_name].columns.push(dataSqlStatsChartMySQL[i].sql_type);
+if (!sqlStatsGroups[dataSqlStatsChartMySQL[i].stat_name].columns) sqlStatsGroups[dataSqlStatsChartMySQL[i].stat_name].columns = [];
+sqlStatsGroups[dataSqlStatsChartMySQL[i].stat_name].columns.push(dataSqlStatsChartMySQL[i].sql_type);
 }
 
 // SQL Stats MySQL
 
-var timeFormatArrayMySQL = ["SUM_TIMER_WAIT_T", "SUM_LOCK_TIME_T", "SUM_TIMER_WAIT_B", "SUM_LOCK_TIME_B", "SUM_TIMER_WAIT_D", "SUM_LOCK_TIME_D", "SUM_TIMER_WAIT_TA", "SUM_LOCK_TIME_B", "MIN_TIMER_WAIT", "AVG_TIMER_WAIT", "MAX_TIMER_WAIT"];
-var execFormatArrayMySQL = ["COUNT_STAR_T", "COUNT_STAR_B", "COUNT_STAR_D", "SUM_ERRORS_B", "SUM_WARNINGS_B", "SUM_ROWS_AFFECTED_B", "SUM_ROWS_SENT_B", "SUM_ROWS_EXAMINED_B", "SUM_CREATED_TMP_DISK_TABLES_B", "SUM_CREATED_TMP_TABLES_B", "SUM_SELECT_FULL_JOIN_B", "SUM_SELECT_FULL_RANGE_JOIN_B", "SUM_SELECT_RANGE_B", "SUM_SELECT_RANGE_CHECK_B", "SUM_SELECT_SCAN_B", "SUM_SORT_MERGE_PASSES_B", "SUM_SORT_RANGE_B", "SUM_SORT_ROWS_B", "SUM_SORT_SCAN_B", "SUM_NO_INDEX_USED_B", "SUM_NO_GOOD_INDEX_USED_B", "SUM_ERRORS_T", "SUM_WARNINGS_T", "SUM_ROWS_AFFECTED_T", "SUM_ROWS_SENT_T", "SUM_ROWS_EXAMINED_T", "SUM_CREATED_TMP_DISK_TABLES_T", "SUM_CREATED_TMP_TABLES_T", "SUM_SELECT_FULL_JOIN_T", "SUM_SELECT_FULL_RANGE_JOIN_T", "SUM_SELECT_RANGE_T", "SUM_SELECT_RANGE_CHECK_T", "SUM_SELECT_SCAN_T", "SUM_SORT_MERGE_PASSES_T", "SUM_SORT_RANGE_T", "SUM_SORT_ROWS_T", "SUM_SORT_SCAN_T", "SUM_NO_INDEX_USED_T", "SUM_NO_GOOD_INDEX_USED_T", "SUM_ERRORS_D", "SUM_WARNINGS_D", "SUM_ROWS_AFFECTED_D", "SUM_ROWS_SENT_D", "SUM_ROWS_EXAMINED_D", "SUM_CREATED_DMP_DISK_DABLES_D", "SUM_CREATED_DMP_DABLES_D", "SUM_SELECT_FULL_JOIN_D", "SUM_SELECT_FULL_RANGE_JOIN_D", "SUM_SELECT_RANGE_D", "SUM_SELECT_RANGE_CHECK_D", "SUM_SELECT_SCAN_D", "SUM_SORT_MERGE_PASSES_D", "SUM_SORT_RANGE_D", "SUM_SORT_ROWS_D", "SUM_SORT_SCAN_D", "SUM_NO_INDEX_USED_D", "SUM_NO_GOOD_INDEX_USED_D", "COUNT_STAR", "COUNT_READ", "COUNT_WRITE", "COUNT_MISC", "SUM_NUMBER_OF_BYTES_READ", "SUM_NUMBER_OF_BYTES_WRITE","GLOBAL_STATUS_B","GLOBAL_STATUS_T","GLOBAL_STATUS_D"];
-var percentFormatArrayMySQL = ["SUM_TIMER_WAIT_S", "COUNT_STAR_S", "SUM_LOCK_TIME_S", "SUM_ROWS_EXAMINED_S", "SUM_ROWS_AFFECTED_S", "SUM_ROWS_SENT_S", "SUM_CREATED_TMP_TABLES_S", "SUM_CREATED_TMP_DISK_TABLES_S", "SUM_SELECT_FULL_JOIN_S", "SUM_SELECT_FULL_RANGE_JOIN_S", "SUM_SELECT_RANGE_S", "SUM_SELECT_RANGE_CHECK_S", "SUM_SELECT_SCAN_S", "SUM_SORT_MERGE_PASSES_S", "SUM_SORT_RANGE_S", "SUM_SORT_ROWS_S", "SUM_SORT_SCAN_S", "SUM_NO_INDEX_USED_S", "SUM_NO_GOOD_INDEX_USED_S", "SUM_ERRORS_S", "SUM_WARNINGS_S", "COUNT_STAR_PC", "GLOBAL_STATUS_PC"];
+var timeFormatArray = ["SUM_TIMER_WAIT_T", "SUM_LOCK_TIME_T", "SUM_TIMER_WAIT_B", "SUM_LOCK_TIME_B", "SUM_TIMER_WAIT_D", "SUM_LOCK_TIME_D", "SUM_TIMER_WAIT_TA", "SUM_LOCK_TIME_B", "MIN_TIMER_WAIT", "AVG_TIMER_WAIT", "MAX_TIMER_WAIT"];
+var execFormatArray = ["COUNT_STAR_T", "COUNT_STAR_B", "COUNT_STAR_D", "SUM_ERRORS_B", "SUM_WARNINGS_B", "SUM_ROWS_AFFECTED_B", "SUM_ROWS_SENT_B", "SUM_ROWS_EXAMINED_B", "SUM_CREATED_TMP_DISK_TABLES_B", "SUM_CREATED_TMP_TABLES_B", "SUM_SELECT_FULL_JOIN_B", "SUM_SELECT_FULL_RANGE_JOIN_B", "SUM_SELECT_RANGE_B", "SUM_SELECT_RANGE_CHECK_B", "SUM_SELECT_SCAN_B", "SUM_SORT_MERGE_PASSES_B", "SUM_SORT_RANGE_B", "SUM_SORT_ROWS_B", "SUM_SORT_SCAN_B", "SUM_NO_INDEX_USED_B", "SUM_NO_GOOD_INDEX_USED_B", "SUM_ERRORS_T", "SUM_WARNINGS_T", "SUM_ROWS_AFFECTED_T", "SUM_ROWS_SENT_T", "SUM_ROWS_EXAMINED_T", "SUM_CREATED_TMP_DISK_TABLES_T", "SUM_CREATED_TMP_TABLES_T", "SUM_SELECT_FULL_JOIN_T", "SUM_SELECT_FULL_RANGE_JOIN_T", "SUM_SELECT_RANGE_T", "SUM_SELECT_RANGE_CHECK_T", "SUM_SELECT_SCAN_T", "SUM_SORT_MERGE_PASSES_T", "SUM_SORT_RANGE_T", "SUM_SORT_ROWS_T", "SUM_SORT_SCAN_T", "SUM_NO_INDEX_USED_T", "SUM_NO_GOOD_INDEX_USED_T", "SUM_ERRORS_D", "SUM_WARNINGS_D", "SUM_ROWS_AFFECTED_D", "SUM_ROWS_SENT_D", "SUM_ROWS_EXAMINED_D", "SUM_CREATED_TMP_DISK_TABLES_D", "SUM_CREATED_TMP_TABLES_D", "SUM_SELECT_FULL_JOIN_D", "SUM_SELECT_FULL_RANGE_JOIN_D", "SUM_SELECT_RANGE_D", "SUM_SELECT_RANGE_CHECK_D", "SUM_SELECT_SCAN_D", "SUM_SORT_MERGE_PASSES_D", "SUM_SORT_RANGE_D", "SUM_SORT_ROWS_D", "SUM_SORT_SCAN_D", "SUM_NO_INDEX_USED_D", "SUM_NO_GOOD_INDEX_USED_D", "COUNT_STAR", "COUNT_READ", "COUNT_WRITE", "COUNT_MISC", "SUM_NUMBER_OF_BYTES_READ", "SUM_NUMBER_OF_BYTES_WRITE","GLOBAL_STATUS_B","GLOBAL_STATUS_T","GLOBAL_STATUS_D"];
+var percentFormatArray = ["SUM_TIMER_WAIT_S", "COUNT_STAR_S", "SUM_LOCK_TIME_S", "SUM_ROWS_EXAMINED_S", "SUM_ROWS_AFFECTED_S", "SUM_ROWS_SENT_S", "SUM_CREATED_TMP_TABLES_S", "SUM_CREATED_TMP_DISK_TABLES_S", "SUM_SELECT_FULL_JOIN_S", "SUM_SELECT_FULL_RANGE_JOIN_S", "SUM_SELECT_RANGE_S", "SUM_SELECT_RANGE_CHECK_S", "SUM_SELECT_SCAN_S", "SUM_SORT_MERGE_PASSES_S", "SUM_SORT_RANGE_S", "SUM_SORT_ROWS_S", "SUM_SORT_SCAN_S", "SUM_NO_INDEX_USED_S", "SUM_NO_GOOD_INDEX_USED_S", "SUM_ERRORS_S", "SUM_WARNINGS_S", "COUNT_STAR_PC", "GLOBAL_STATUS_PC"];
 
 var dataSqlStatsTableMySQL = d3.csvParse(csvSqlStatsTableMySQL);
 
@@ -241,9 +241,9 @@ if (currentStatistic === d.STATISTIC) { d.RANK = +currentRank; currentRank = cur
 });
 
 
-var sqlStatsMySQL = { "COUNT_STAR": [], "SUM_TIMER_WAIT": [], "SUM_LOCK_TIME": [], "SUM_ERRORS": [], "SUM_WARNINGS": [], "SUM_ROWS_AFFECTED": [], "SUM_ROWS_SENT": [], "SUM_ROWS_EXAMINED": [], "SUM_CREATED_TMP_DISK_TABLES": [], "SUM_CREATED_TMP_TABLES": [], "SUM_SELECT_FULL_JOIN": [], "SUM_SELECT_FULL_RANGE_JOIN": [], "SUM_SELECT_RANGE": [], "SUM_SELECT_RANGE_CHECK": [], "SUM_SELECT_SCAN": [], "SUM_SORT_MERGE_PASSES": [], "SUM_SORT_RANGE": [], "SUM_SORT_ROWS": [], "SUM_SORT_SCAN": [], "SUM_NO_INDEX_USED": [], "SUM_NO_GOOD_INDEX_USED": [], "FILE_SUMMARY_EVENT": [], "DB_SUMMARY": [], "SQL_TEXT": [], "GLOBAL_STATUS": []};
+var sqlStats = { "COUNT_STAR": [], "SUM_TIMER_WAIT": [], "SUM_LOCK_TIME": [], "SUM_ERRORS": [], "SUM_WARNINGS": [], "SUM_ROWS_AFFECTED": [], "SUM_ROWS_SENT": [], "SUM_ROWS_EXAMINED": [], "SUM_CREATED_TMP_DISK_TABLES": [], "SUM_CREATED_TMP_TABLES": [], "SUM_SELECT_FULL_JOIN": [], "SUM_SELECT_FULL_RANGE_JOIN": [], "SUM_SELECT_RANGE": [], "SUM_SELECT_RANGE_CHECK": [], "SUM_SELECT_SCAN": [], "SUM_SORT_MERGE_PASSES": [], "SUM_SORT_RANGE": [], "SUM_SORT_ROWS": [], "SUM_SORT_SCAN": [], "SUM_NO_INDEX_USED": [], "SUM_NO_GOOD_INDEX_USED": [], "FILE_SUMMARY_EVENT": [], "DB_SUMMARY": [], "SQL_TEXT": [], "GLOBAL_STATUS": []};
 
-var sqlStatsColsMySQL = {
+var sqlStatsCols = {
 "COUNT_STAR": ["RANK", "DIGEST", "SCHEMA_NAME", "SQL_TYPE", "COUNT_STAR_S", "COUNT_STAR_B", "COUNT_STAR_T", "COUNT_STAR_D", "COUNT_STAR_PC", "SUM_TIMER_WAIT_T", "SUM_LOCK_TIME_T", "SUM_ROWS_EXAMINED_T", "SUM_ROWS_SENT_T", "SUM_ROWS_AFFECTED_T", "SUM_CREATED_TMP_TABLES_T", "SUM_CREATED_TMP_DISK_TABLES_T", "SUM_SELECT_FULL_JOIN_T", "SUM_SELECT_FULL_RANGE_JOIN_T", "SUM_SELECT_RANGE_T", "SUM_SELECT_RANGE_CHECK_T", "SUM_SELECT_SCAN_T", "SUM_SORT_MERGE_PASSES_T", "SUM_SORT_RANGE_T", "SUM_SORT_ROWS_T", "SUM_SORT_SCAN_T", "SUM_NO_INDEX_USED_T", "SUM_NO_GOOD_INDEX_USED_T"]
 , "SUM_TIMER_WAIT": ["RANK", "DIGEST", "SCHEMA_NAME", "SQL_TYPE", "SUM_TIMER_WAIT_S", "SUM_TIMER_WAIT_B", "SUM_TIMER_WAIT_T", "SUM_TIMER_WAIT_D", "COUNT_STAR_B", "COUNT_STAR_T", "COUNT_STAR_D", "COUNT_STAR_PC", "SUM_TIMER_WAIT_T", "SUM_LOCK_TIME_T", "COUNT_STAR_T", "SUM_WARNINGS_T", "SUM_ERRORS_T", "SUM_ROWS_EXAMINED_T", "SUM_ROWS_SENT_T", "SUM_ROWS_AFFECTED_T", "SUM_CREATED_TMP_TABLES_T", "SUM_CREATED_TMP_DISK_TABLES_T", "SUM_SELECT_FULL_JOIN_T", "SUM_SELECT_FULL_RANGE_JOIN_T", "SUM_SELECT_RANGE_T", "SUM_SELECT_RANGE_CHECK_T", "SUM_SELECT_SCAN_T", "SUM_SORT_MERGE_PASSES_T", "SUM_SORT_RANGE_T", "SUM_SORT_ROWS_T", "SUM_SORT_SCAN_T", "SUM_NO_INDEX_USED_T", "SUM_NO_GOOD_INDEX_USED_T"]
 , "SUM_LOCK_TIME": ["RANK", "DIGEST", "SCHEMA_NAME", "SQL_TYPE", "SUM_LOCK_TIME_S", "SUM_LOCK_TIME_B", "SUM_LOCK_TIME_T", "SUM_LOCK_TIME_D", "COUNT_STAR_B", "COUNT_STAR_T", "COUNT_STAR_D", "COUNT_STAR_PC", "SUM_TIMER_WAIT_T", "SUM_LOCK_TIME_T", "SUM_ROWS_EXAMINED_T", "SUM_ROWS_SENT_T", "SUM_ROWS_AFFECTED_T", "SUM_CREATED_TMP_TABLES_T", "SUM_CREATED_TMP_DISK_TABLES_T", "SUM_SELECT_FULL_JOIN_T", "SUM_SELECT_FULL_RANGE_JOIN_T", "SUM_SELECT_RANGE_T", "SUM_SELECT_RANGE_CHECK_T", "SUM_SELECT_SCAN_T", "SUM_SORT_MERGE_PASSES_T", "SUM_SORT_RANGE_T", "SUM_SORT_ROWS_T", "SUM_SORT_SCAN_T", "SUM_NO_INDEX_USED_T", "SUM_NO_GOOD_INDEX_USED_T"]
@@ -271,7 +271,7 @@ var sqlStatsColsMySQL = {
 , "GLOBAL_STATUS": ["VARIABLE_NAME", "GLOBAL_STATUS_B", "GLOBAL_STATUS_T", "GLOBAL_STATUS_D", "GLOBAL_STATUS_PC"]
 };
 
-var sqlStatsColsHeader1MySQL = {
+var sqlStatsColsHeader1 = {
 "COUNT_STAR": ["#", "DIGEST", "SCHEMA NAME", "SQL TYPE", "%", "EXECUTIONS", "TIME", "ROWS", "TEMP TABLES", "SELECT", "SORT", "NO INDEX USED"]
 , "SUM_TIMER_WAIT": ["#", "DIGEST", "SCHEMA NAME", "SQL TYPE", "%", "TIMER WAIT", "EXECUTIONS", "TIME", "COUNT", "ROWS", "TEMP TABLES", "SELECT", "SORT", "NO INDEX USED"]
 , "SUM_LOCK_TIME": ["#", "DIGEST", "SCHEMA NAME", "SQL TYPE", "%", "LOCK TIME", "EXECUTIONS", "TIME", "ROWS", "TEMP TABLES", "SELECT", "SORT", "NO INDEX USED"]
@@ -299,7 +299,7 @@ var sqlStatsColsHeader1MySQL = {
 , "GLOBAL_STATUS": ["Variable Name", "B", "T", "Δ", "%Δ"]
 };
 
-var sqlStatsColsHeader2MySQL = {
+var sqlStatsColsHeader2 = {
 "COUNT_STAR": ["B", "T", "Δ", "%Δ", "WAIT", "LOCK", "EXAMINED", "SENT", "AFFECTED", "TEMP", "DISK", "FJ", "FRJ", "R", "RC", "SCAN", "MERGE", "RANGE", "ROWS", "SCAN", "NO", "NO GOOD"]
 , "SUM_TIMER_WAIT": ["B", "T", "Δ", "B", "T", "Δ", "%Δ", "WAIT", "LOCK", "Exec", "Warn", "Err", "EXAMINED", "SENT", "AFFECTED", "TEMP", "DISK", "FJ", "FRJ", "R", "RC", "SCAN", "MERGE", "RANGE", "ROWS", "SCAN", "NO", "NO GOOD"]
 , "SUM_LOCK_TIME": ["B", "T", "Δ", "B", "T", "Δ", "%Δ", "WAIT", "LOCK", "EXAMINED", "SENT", "AFFECTED", "TEMP", "DISK", "FJ", "FRJ", "R", "RC", "SCAN", "MERGE", "RANGE", "ROWS", "SCAN", "NO", "NO GOOD"]
@@ -327,15 +327,15 @@ var sqlStatsColsHeader2MySQL = {
 , "GLOBAL_STATUS": []
 };
 
-var sqlStatsHeaderColspan2MySQL = ["TIME", "TEMP TABLES", "NO INDEX USED"];
-var sqlStatsHeaderColspan3MySQL = ["TIMER WAIT","ROWS","COUNT","LOCK TIME","ROWS EXAMINED","ROWS AFFECTED","ROWS SENT","CREATED TEMP TABLES","CREATED TEMP DISK TABLES","SELECT FULL JOIN","SELECT FULL RANGE JOIN","SELECT RANGE","SELECT RANGE CHECK","SELECT SCAN","SORT MERGE PASSES","SORT RANGE","SORT ROWS","SORT SCAN","NO INDEX USED ","NO GOOD INDEX USED","ERRORS","WARNINGS"];
-var sqlStatsHeaderColspan4MySQL = ["EXECUTIONS", "SORT"];
-var sqlStatsHeaderColspan5MySQL = ["SELECT", "OVERALL LATENCY"];
-var sqlStatsHeaderColspan6MySQL = ["READ LATENCY", "WRITE LATENCY", "MISC LATENCY"];
-var sqlStatsHeaderColspan7MySQL = ["TIME DISTRIBUTION"];
+var sqlStatsHeaderColspan2 = ["TIME", "TEMP TABLES", "NO INDEX USED"];
+var sqlStatsHeaderColspan3 = ["TIMER WAIT","ROWS","COUNT","LOCK TIME","ROWS EXAMINED","ROWS AFFECTED","ROWS SENT","CREATED TEMP TABLES","CREATED TEMP DISK TABLES","SELECT FULL JOIN","SELECT FULL RANGE JOIN","SELECT RANGE","SELECT RANGE CHECK","SELECT SCAN","SORT MERGE PASSES","SORT RANGE","SORT ROWS","SORT SCAN","NO INDEX USED ","NO GOOD INDEX USED","ERRORS","WARNINGS"];
+var sqlStatsHeaderColspan4 = ["EXECUTIONS", "SORT"];
+var sqlStatsHeaderColspan5 = ["SELECT", "OVERALL LATENCY"];
+var sqlStatsHeaderColspan6 = ["READ LATENCY", "WRITE LATENCY", "MISC LATENCY"];
+var sqlStatsHeaderColspan7 = ["TIME DISTRIBUTION"];
 
 
-var sqlStatsTableDetailsMySQL = {
+var sqlStatsTableDetails = {
 "COUNT_STAR": { name: "Top 20 SQLs by Executions", description: "Total Executions", colShare: "COUNT_STAR_S", colDiff: "COUNT_STAR_D", colBaseline: "COUNT_STAR_B", colTestrun: "COUNT_STAR_T" }
 , "SUM_TIMER_WAIT": { name: "Top 20 SQLs by Sum Timer Wait", description: "Total Timer Wait", colShare: "SUM_TIMER_WAIT_S", colDiff: "SUM_TIMER_WAIT_D", colBaseline: "SUM_TIMER_WAIT_B", colTestrun: "SUM_TIMER_WAIT_T" }
 , "SUM_LOCK_TIME": { name: "Top 20 SQLs by Sum Lock Time", description: "Total Lock Time", colShare: "SUM_LOCK_TIME_S", colDiff: "SUM_LOCK_TIME_D", colBaseline: "SUM_LOCK_TIME_B", colTestrun: "SUM_LOCK_TIME_T" }
@@ -366,51 +366,51 @@ var sqlStatsTableDetailsMySQL = {
 for (i = 0, t = 0; i < dataSqlStatsTableMySQL.length; i++) {
 var myObj = {};
 
-sqlStatsColsMySQL[dataSqlStatsTableMySQL[i]["STATISTIC"]].forEach(function (d) {
+sqlStatsCols[dataSqlStatsTableMySQL[i]["STATISTIC"]].forEach(function (d) {
 
     switch (d) {
         case "SUM_TIMER_WAIT_D": myObj[d] = (+dataSqlStatsTableMySQL[i]["SUM_TIMER_WAIT_T"]) - (+dataSqlStatsTableMySQL[i]["SUM_TIMER_WAIT_B"]); break;
-        case "SUM_TIMER_WAIT_S": if ((+sqlStatsGroupsMySQL["TIMER_WAIT"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_TIMER_WAIT_T"]))/(+sqlStatsGroupsMySQL["TIMER_WAIT"][1]["total"]);} break;
-        case "COUNT_STAR_S": if ((+sqlStatsGroupsMySQL["EXECUTIONS"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["COUNT_STAR_T"]))/(+sqlStatsGroupsMySQL["EXECUTIONS"][1]["total"]);} break;
-        case "SUM_LOCK_TIME_S": if ((+sqlStatsGroupsMySQL["LOCK_TIME"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_LOCK_TIME_T"]))/(+sqlStatsGroupsMySQL["LOCK_TIME"][1]["total"]);} break;
+        case "SUM_TIMER_WAIT_S": if ((+sqlStatsGroups["TIMER_WAIT"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_TIMER_WAIT_T"]))/(+sqlStatsGroups["TIMER_WAIT"][1]["total"]);} break;
+        case "COUNT_STAR_S": if ((+sqlStatsGroups["EXECUTIONS"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["COUNT_STAR_T"]))/(+sqlStatsGroups["EXECUTIONS"][1]["total"]);} break;
+        case "SUM_LOCK_TIME_S": if ((+sqlStatsGroups["LOCK_TIME"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_LOCK_TIME_T"]))/(+sqlStatsGroups["LOCK_TIME"][1]["total"]);} break;
         case "SUM_LOCK_TIME_D": myObj[d] = (+dataSqlStatsTableMySQL[i]["SUM_LOCK_TIME_T"]) - (+dataSqlStatsTableMySQL[i]["SUM_LOCK_TIME_B"]); break;
         case "COUNT_STAR_D": myObj[d] = (+dataSqlStatsTableMySQL[i]["COUNT_STAR_T"]) - (+dataSqlStatsTableMySQL[i]["COUNT_STAR_B"]); break;
         case "COUNT_STAR_PC": if ((+dataSqlStatsTableMySQL[i]["COUNT_STAR_B"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["COUNT_STAR_T"]) - (+dataSqlStatsTableMySQL[i]["COUNT_STAR_B"]))/(+dataSqlStatsTableMySQL[i]["COUNT_STAR_B"]);} break;
-        case "SUM_ROWS_EXAMINED_S": if ((+sqlStatsGroupsMySQL["ROWS_EXAMINED"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_ROWS_EXAMINED_T"]))/(+sqlStatsGroupsMySQL["ROWS_EXAMINED"][1]["total"]);} break;
+        case "SUM_ROWS_EXAMINED_S": if ((+sqlStatsGroups["ROWS_EXAMINED"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_ROWS_EXAMINED_T"]))/(+sqlStatsGroups["ROWS_EXAMINED"][1]["total"]);} break;
         case "SUM_ROWS_EXAMINED_D": myObj[d] = (+dataSqlStatsTableMySQL[i]["SUM_ROWS_EXAMINED_T"]) - (+dataSqlStatsTableMySQL[i]["SUM_ROWS_EXAMINED_B"]); break;
-        case "SUM_ROWS_AFFECTED_S": if ((+sqlStatsGroupsMySQL["ROWS_AFFECTED"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_ROWS_AFFECTED_T"]))/(+sqlStatsGroupsMySQL["ROWS_AFFECTED"][1]["total"]);} break;
+        case "SUM_ROWS_AFFECTED_S": if ((+sqlStatsGroups["ROWS_AFFECTED"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_ROWS_AFFECTED_T"]))/(+sqlStatsGroups["ROWS_AFFECTED"][1]["total"]);} break;
         case "SUM_ROWS_AFFECTED_D": myObj[d] = (+dataSqlStatsTableMySQL[i]["SUM_ROWS_AFFECTED_T"]) - (+dataSqlStatsTableMySQL[i]["SUM_ROWS_AFFECTED_B"]); break;
-        case "SUM_ROWS_SENT_S": if ((+sqlStatsGroupsMySQL["ROWS_SENT"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_ROWS_SENT_T"]))/(+sqlStatsGroupsMySQL["ROWS_SENT"][1]["total"]);} break;
+        case "SUM_ROWS_SENT_S": if ((+sqlStatsGroups["ROWS_SENT"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_ROWS_SENT_T"]))/(+sqlStatsGroups["ROWS_SENT"][1]["total"]);} break;
         case "SUM_ROWS_SENT_D": myObj[d] = (+dataSqlStatsTableMySQL[i]["SUM_ROWS_SENT_T"]) - (+dataSqlStatsTableMySQL[i]["SUM_ROWS_SENT_B"]); break;
-        case "SUM_CREATED_TMP_TABLES_S": if ((+sqlStatsGroupsMySQL["CREATED_TMP_TABLES"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_CREATED_TMP_TABLES_T"]))/(+sqlStatsGroupsMySQL["CREATED_TMP_TABLES"][1]["total"]);} break;
+        case "SUM_CREATED_TMP_TABLES_S": if ((+sqlStatsGroups["CREATED_TMP_TABLES"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_CREATED_TMP_TABLES_T"]))/(+sqlStatsGroups["CREATED_TMP_TABLES"][1]["total"]);} break;
         case "SUM_CREATED_TMP_TABLES_D": myObj[d] = (+dataSqlStatsTableMySQL[i]["SUM_CREATED_TMP_TABLES_T"]) - (+dataSqlStatsTableMySQL[i]["SUM_CREATED_TMP_TABLES_B"]); break;
-        case "SUM_CREATED_TMP_DISK_TABLES_S": if ((+sqlStatsGroupsMySQL["CREATED_TMP_DISK_TABLES"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_CREATED_TMP_DISK_TABLES_T"]))/(+sqlStatsGroupsMySQL["CREATED_TMP_DISK_TABLES"][1]["total"]);} break;
+        case "SUM_CREATED_TMP_DISK_TABLES_S": if ((+sqlStatsGroups["CREATED_TMP_DISK_TABLES"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_CREATED_TMP_DISK_TABLES_T"]))/(+sqlStatsGroups["CREATED_TMP_DISK_TABLES"][1]["total"]);} break;
         case "SUM_CREATED_TMP_DISK_TABLES_D": myObj[d] = (+dataSqlStatsTableMySQL[i]["SUM_CREATED_TMP_DISK_TABLES_T"]) - (+dataSqlStatsTableMySQL[i]["SUM_CREATED_TMP_DISK_TABLES_B"]); break;
-        case "SUM_SELECT_FULL_JOIN_S": if ((+sqlStatsGroupsMySQL["SELECT_FULL_JOIN"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_SELECT_FULL_JOIN_T"]))/(+sqlStatsGroupsMySQL["SELECT_FULL_JOIN"][1]["total"]);} break;
+        case "SUM_SELECT_FULL_JOIN_S": if ((+sqlStatsGroups["SELECT_FULL_JOIN"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_SELECT_FULL_JOIN_T"]))/(+sqlStatsGroups["SELECT_FULL_JOIN"][1]["total"]);} break;
         case "SUM_SELECT_FULL_JOIN_D": myObj[d] = (+dataSqlStatsTableMySQL[i]["SUM_SELECT_FULL_JOIN_T"]) - (+dataSqlStatsTableMySQL[i]["SUM_SELECT_FULL_JOIN_B"]); break;
-        case "SUM_SELECT_FULL_RANGE_JOIN_S": if ((+sqlStatsGroupsMySQL["SELECT_FULL_RANGE_JOIN"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_SELECT_FULL_RANGE_JOIN_T"]))/(+sqlStatsGroupsMySQL["SELECT_FULL_RANGE_JOIN"][1]["total"]);} break;
+        case "SUM_SELECT_FULL_RANGE_JOIN_S": if ((+sqlStatsGroups["SELECT_FULL_RANGE_JOIN"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_SELECT_FULL_RANGE_JOIN_T"]))/(+sqlStatsGroups["SELECT_FULL_RANGE_JOIN"][1]["total"]);} break;
         case "SUM_SELECT_FULL_RANGE_JOIN_D": myObj[d] = (+dataSqlStatsTableMySQL[i]["SUM_SELECT_FULL_RANGE_JOIN_T"]) - (+dataSqlStatsTableMySQL[i]["SUM_SELECT_FULL_RANGE_JOIN_B"]); break;
-        case "SUM_SELECT_RANGE_S": if ((+sqlStatsGroupsMySQL["SELECT_RANGE"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_SELECT_RANGE_T"]))/(+sqlStatsGroupsMySQL["SELECT_RANGE"][1]["total"]);} break;
+        case "SUM_SELECT_RANGE_S": if ((+sqlStatsGroups["SELECT_RANGE"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_SELECT_RANGE_T"]))/(+sqlStatsGroups["SELECT_RANGE"][1]["total"]);} break;
         case "SUM_SELECT_RANGE_D": myObj[d] = (+dataSqlStatsTableMySQL[i]["SUM_SELECT_RANGE_T"]) - (+dataSqlStatsTableMySQL[i]["SUM_SELECT_RANGE_B"]); break;
-        case "SUM_SELECT_RANGE_CHECK_S": if ((+sqlStatsGroupsMySQL["SELECT_RANGE_CHECK"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_SELECT_RANGE_CHECK_T"]))/(+sqlStatsGroupsMySQL["SELECT_RANGE_CHECK"][1]["total"]);} break;
+        case "SUM_SELECT_RANGE_CHECK_S": if ((+sqlStatsGroups["SELECT_RANGE_CHECK"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_SELECT_RANGE_CHECK_T"]))/(+sqlStatsGroups["SELECT_RANGE_CHECK"][1]["total"]);} break;
         case "SUM_SELECT_RANGE_CHECK_D": myObj[d] = (+dataSqlStatsTableMySQL[i]["SUM_SELECT_RANGE_CHECK_T"]) - (+dataSqlStatsTableMySQL[i]["SUM_SELECT_RANGE_CHECK_B"]); break;
-        case "SUM_SELECT_SCAN_S": if ((+sqlStatsGroupsMySQL["SELECT_SCAN"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_SELECT_SCAN_T"]))/(+sqlStatsGroupsMySQL["SELECT_SCAN"][1]["total"]);} break;
+        case "SUM_SELECT_SCAN_S": if ((+sqlStatsGroups["SELECT_SCAN"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_SELECT_SCAN_T"]))/(+sqlStatsGroups["SELECT_SCAN"][1]["total"]);} break;
         case "SUM_SELECT_SCAN_D": myObj[d] = (+dataSqlStatsTableMySQL[i]["SUM_SELECT_SCAN_T"]) - (+dataSqlStatsTableMySQL[i]["SUM_SELECT_SCAN_B"]); break;
-        case "SUM_SORT_MERGE_PASSES_S": if ((+sqlStatsGroupsMySQL["SORT_MERGE_PASSES"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_SORT_MERGE_PASSES_T"]))/(+sqlStatsGroupsMySQL["SORT_MERGE_PASSES"][1]["total"]);} break;
+        case "SUM_SORT_MERGE_PASSES_S": if ((+sqlStatsGroups["SORT_MERGE_PASSES"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_SORT_MERGE_PASSES_T"]))/(+sqlStatsGroups["SORT_MERGE_PASSES"][1]["total"]);} break;
         case "SUM_SORT_MERGE_PASSES_D": myObj[d] = (+dataSqlStatsTableMySQL[i]["SUM_SORT_MERGE_PASSES_T"]) - (+dataSqlStatsTableMySQL[i]["SUM_SORT_MERGE_PASSES_B"]); break;
-        case "SUM_SORT_RANGE_S": if ((+sqlStatsGroupsMySQL["SORT_RANGE"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_SORT_RANGE_T"]))/(+sqlStatsGroupsMySQL["SORT_RANGE"][1]["total"]);} break;
+        case "SUM_SORT_RANGE_S": if ((+sqlStatsGroups["SORT_RANGE"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_SORT_RANGE_T"]))/(+sqlStatsGroups["SORT_RANGE"][1]["total"]);} break;
         case "SUM_SORT_RANGE_D": myObj[d] = (+dataSqlStatsTableMySQL[i]["SUM_SORT_RANGE_T"]) - (+dataSqlStatsTableMySQL[i]["SUM_SORT_RANGE_B"]); break;
-        case "SUM_SORT_ROWS_S": if ((+sqlStatsGroupsMySQL["SORT_ROWS"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_SORT_ROWS_T"]))/(+sqlStatsGroupsMySQL["SORT_ROWS"][1]["total"]);} break;
+        case "SUM_SORT_ROWS_S": if ((+sqlStatsGroups["SORT_ROWS"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_SORT_ROWS_T"]))/(+sqlStatsGroups["SORT_ROWS"][1]["total"]);} break;
         case "SUM_SORT_ROWS_D": myObj[d] = (+dataSqlStatsTableMySQL[i]["SUM_SORT_ROWS_T"]) - (+dataSqlStatsTableMySQL[i]["SUM_SORT_ROWS_B"]); break;
-        case "SUM_SORT_SCAN_S": if ((+sqlStatsGroupsMySQL["SORT_SCAN"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_SORT_SCAN_T"]))/(+sqlStatsGroupsMySQL["SORT_SCAN"][1]["total"]);} break;
+        case "SUM_SORT_SCAN_S": if ((+sqlStatsGroups["SORT_SCAN"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_SORT_SCAN_T"]))/(+sqlStatsGroups["SORT_SCAN"][1]["total"]);} break;
         case "SUM_SORT_SCAN_D": myObj[d] = (+dataSqlStatsTableMySQL[i]["SUM_SORT_SCAN_T"]) - (+dataSqlStatsTableMySQL[i]["SUM_SORT_SCAN_B"]); break;
-        case "SUM_NO_INDEX_USED_S": if ((+sqlStatsGroupsMySQL["NO_INDEX_USED"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_NO_INDEX_USED_T"]))/(+sqlStatsGroupsMySQL["NO_INDEX_USED"][1]["total"]);} break;
+        case "SUM_NO_INDEX_USED_S": if ((+sqlStatsGroups["NO_INDEX_USED"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_NO_INDEX_USED_T"]))/(+sqlStatsGroups["NO_INDEX_USED"][1]["total"]);} break;
         case "SUM_NO_INDEX_USED_D": myObj[d] = (+dataSqlStatsTableMySQL[i]["SUM_NO_INDEX_USED_T"]) - (+dataSqlStatsTableMySQL[i]["SUM_NO_INDEX_USED_B"]); break;
-        case "SUM_NO_GOOD_INDEX_USED_S": if ((+sqlStatsGroupsMySQL["NO_GOOD_INDEX_USED"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_NO_GOOD_INDEX_USED_T"]))/(+sqlStatsGroupsMySQL["NO_GOOD_INDEX_USED"][1]["total"]);} break;
+        case "SUM_NO_GOOD_INDEX_USED_S": if ((+sqlStatsGroups["NO_GOOD_INDEX_USED"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_NO_GOOD_INDEX_USED_T"]))/(+sqlStatsGroups["NO_GOOD_INDEX_USED"][1]["total"]);} break;
         case "SUM_NO_GOOD_INDEX_USED_D": myObj[d] = (+dataSqlStatsTableMySQL[i]["SUM_NO_GOOD_INDEX_USED_T"]) - (+dataSqlStatsTableMySQL[i]["SUM_NO_GOOD_INDEX_USED_B"]); break;
-        case "SUM_ERRORS_S": if ((+sqlStatsGroupsMySQL["ERRORS"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_ERRORS_T"]))/(+sqlStatsGroupsMySQL["ERRORS"][1]["total"]);} break;
+        case "SUM_ERRORS_S": if ((+sqlStatsGroups["ERRORS"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_ERRORS_T"]))/(+sqlStatsGroups["ERRORS"][1]["total"]);} break;
         case "SUM_ERRORS_D": myObj[d] = (+dataSqlStatsTableMySQL[i]["SUM_ERRORS_T"]) - (+dataSqlStatsTableMySQL[i]["SUM_ERRORS_B"]); break;
-        case "SUM_WARNINGS_S": if ((+sqlStatsGroupsMySQL["WARNINGS"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_WARNINGS_T"]))/(+sqlStatsGroupsMySQL["WARNINGS"][1]["total"]);} break;
+        case "SUM_WARNINGS_S": if ((+sqlStatsGroups["WARNINGS"][1]["total"]) == 0 ) {myObj[d] = 1} else {myObj[d] = ((+dataSqlStatsTableMySQL[i]["SUM_WARNINGS_T"]))/(+sqlStatsGroups["WARNINGS"][1]["total"]);} break;
         case "SUM_WARNINGS_D": myObj[d] = (+dataSqlStatsTableMySQL[i]["SUM_WARNINGS_T"]) - (+dataSqlStatsTableMySQL[i]["SUM_WARNINGS_B"]); break;
 
 
@@ -419,10 +419,10 @@ sqlStatsColsMySQL[dataSqlStatsTableMySQL[i]["STATISTIC"]].forEach(function (d) {
     }
 
 })
-sqlStatsMySQL[dataSqlStatsTableMySQL[i]["STATISTIC"]].push(myObj);
+sqlStats[dataSqlStatsTableMySQL[i]["STATISTIC"]].push(myObj);
 };
 
-var sqlStatsTablesMySQL = ["SUM_TIMER_WAIT", "COUNT_STAR", "SUM_LOCK_TIME", "SUM_ROWS_EXAMINED", "SUM_ROWS_SENT", "SUM_ROWS_AFFECTED", "SUM_CREATED_TMP_TABLES", "SUM_CREATED_TMP_DISK_TABLES", "SUM_SELECT_FULL_JOIN", "SUM_SELECT_FULL_RANGE_JOIN", "SUM_SELECT_RANGE", "SUM_SELECT_RANGE_CHECK", "SUM_SELECT_SCAN", "SUM_SORT_MERGE_PASSES", "SUM_SORT_RANGE", "SUM_SORT_ROWS", "SUM_SORT_SCAN", "SUM_NO_INDEX_USED", "SUM_NO_GOOD_INDEX_USED", "SUM_ERRORS", "SUM_WARNINGS"];
+var sqlStatsTables = ["SUM_TIMER_WAIT", "COUNT_STAR", "SUM_LOCK_TIME", "SUM_ROWS_EXAMINED", "SUM_ROWS_SENT", "SUM_ROWS_AFFECTED", "SUM_CREATED_TMP_TABLES", "SUM_CREATED_TMP_DISK_TABLES", "SUM_SELECT_FULL_JOIN", "SUM_SELECT_FULL_RANGE_JOIN", "SUM_SELECT_RANGE", "SUM_SELECT_RANGE_CHECK", "SUM_SELECT_SCAN", "SUM_SORT_MERGE_PASSES", "SUM_SORT_RANGE", "SUM_SORT_ROWS", "SUM_SORT_SCAN", "SUM_NO_INDEX_USED", "SUM_NO_GOOD_INDEX_USED", "SUM_ERRORS", "SUM_WARNINGS"];
 
 // csvFileSummaryByEventMySQL
 
@@ -432,10 +432,10 @@ var dataFileSummaryByEventMySQL = d3.csvParse(csvFileSummaryByEventMySQL);
 
 for (i = 0, t = 0; i < dataFileSummaryByEventMySQL.length; i++) {
 var myObj = {};
-sqlStatsColsMySQL["FILE_SUMMARY_EVENT"].forEach(function (d) {
+sqlStatsCols["FILE_SUMMARY_EVENT"].forEach(function (d) {
     myObj[d] = dataFileSummaryByEventMySQL[i][d];
 })
-sqlStatsMySQL["FILE_SUMMARY_EVENT"].push(myObj);
+sqlStats["FILE_SUMMARY_EVENT"].push(myObj);
 };
 
 // DB Summary
@@ -443,10 +443,10 @@ var dataDbSummary = d3.csvParse(csvDbSummary);
 
 for (i = 0, t = 0; i < dataDbSummary.length; i++) {
 var myObj = {};
-sqlStatsColsMySQL["DB_SUMMARY"].forEach(function (d) {
+sqlStatsCols["DB_SUMMARY"].forEach(function (d) {
     myObj[d] = dataDbSummary[i][d];
 })
-sqlStatsMySQL["DB_SUMMARY"].push(myObj);
+sqlStats["DB_SUMMARY"].push(myObj);
 };
 
 // Global Status
@@ -454,7 +454,7 @@ var dataGlobalStatus = d3.csvParse(csvGlobalStatus);
 
 for (i = 0, t = 0; i < dataGlobalStatus.length; i++) {
 var myObj = {};
-sqlStatsColsMySQL["GLOBAL_STATUS"].forEach(function (d) {
+sqlStatsCols["GLOBAL_STATUS"].forEach(function (d) {
     switch(d)
         {
             case "GLOBAL_STATUS_D":
@@ -467,7 +467,7 @@ sqlStatsColsMySQL["GLOBAL_STATUS"].forEach(function (d) {
             myObj[d] = dataGlobalStatus[i][d];
         }
 })
-sqlStatsMySQL["GLOBAL_STATUS"].push(myObj);
+sqlStats["GLOBAL_STATUS"].push(myObj);
 };
 
 // SQL Text Table
@@ -477,10 +477,10 @@ var dataSqlText = psv.parse(csvSQLText);
 
 for (i = 0, t = 0; i < dataSqlText.length; i++) {
 var myObj = {};
-sqlStatsColsMySQL["SQL_TEXT"].forEach(function(d){
+sqlStatsCols["SQL_TEXT"].forEach(function(d){
     myObj[d] = dataSqlText[i][d];
 })
-sqlStatsMySQL["SQL_TEXT"].push(myObj);
+sqlStats["SQL_TEXT"].push(myObj);
 };
 
 
@@ -503,8 +503,8 @@ d.value = +d.value;
 
 var timeFormatYMD_HMS = d3.timeParse("%Y-%m-%d %H:%M:%S");
 
-var startTimeBr = timeFormatYMD_HMS(sqlStatsMySQL["DB_SUMMARY"][0].START_SAMPLE_TIME);
-var finishTimeBr = timeFormatYMD_HMS(sqlStatsMySQL["DB_SUMMARY"][0].FINISH_SAMPLE_TIME);
+var startTimeBr = timeFormatYMD_HMS(sqlStats["DB_SUMMARY"][0].START_SAMPLE_TIME);
+var finishTimeBr = timeFormatYMD_HMS(sqlStats["DB_SUMMARY"][0].FINISH_SAMPLE_TIME);
 
 var stmtTsArrayBr = stmtTsParse(startTimeBr, finishTimeBr, dataStmtTsBr);
 
@@ -514,8 +514,8 @@ d.date = timeFormatDMY_HMS(d.date);
 d.value = +d.value;
 });
 
-var startTimeTr = timeFormatYMD_HMS(sqlStatsMySQL["DB_SUMMARY"][1].START_SAMPLE_TIME);
-var finishTimeTr = timeFormatYMD_HMS(sqlStatsMySQL["DB_SUMMARY"][1].FINISH_SAMPLE_TIME);
+var startTimeTr = timeFormatYMD_HMS(sqlStats["DB_SUMMARY"][1].START_SAMPLE_TIME);
+var finishTimeTr = timeFormatYMD_HMS(sqlStats["DB_SUMMARY"][1].FINISH_SAMPLE_TIME);
 
 var stmtTsArrayTr = stmtTsParse(startTimeTr, finishTimeTr, dataStmtTsTr);
 

@@ -1,7 +1,7 @@
 /*
-    Copyright (c) 2016-2025 Taras Guliak XDBTIME
+    Copyright (c) 2016-2026 Taras Guliak XDBTIME Community Edition
     All rights reserved.
-    Version: 2025.02
+    Version: 2025.12
     
     Performance Period Comparison Report (based on AWR data - cdb_hist* views)
 
@@ -29,8 +29,8 @@
 		SQL> @xdbawrcompare.sql
 
 		XDBTIME reports for Oracle EE (with Diagnostic Pack)
-		Copyright (c) 2016, 2025, XDBTIME Taras Guliak
-		Version: 2025.02
+		Copyright (c) 2016, 2026, XDBTIME Taras Guliak
+		Version: 2025.12
 
 		Performance Period Comparison Report
 
@@ -94,8 +94,8 @@ column inst_id_tr new_value inst_id_tr;
 set termout on;
 prompt
 prompt XDBTIME reports for Oracle EE (with Diagnostic Pack)
-prompt Copyright (c) 2016, 2025, XDBTIME Taras Guliak
-prompt Version: 2025.02
+prompt Copyright (c) 2016, 2026, XDBTIME Taras Guliak
+prompt Version: 2025.12
 prompt
 prompt Performance Period Comparison Report
 prompt
@@ -240,14 +240,26 @@ prompt        font-size: 12px;;
 prompt        }
 prompt        td {
 prompt        border-bottom: 0.5px solid #ddd;;
+prompt        border-top-left-radius: 1.5px;;
+prompt        border-top-right-radius: 1.5px;;
+prompt        border-bottom-left-radius: 1.5px;;
+prompt        border-bottom-right-radius: 1.5px;;
 prompt        }
 prompt        th {
 prompt        font-weight: bold;;
 prompt        background-color: #999;;
 prompt        color: white;;
+prompt        border-top-left-radius: 1.5px;;
+prompt        border-top-right-radius: 1.5px;;
+prompt        border-bottom-left-radius: 1.5px;;
+prompt        border-bottom-right-radius: 1.5px;;
 prompt        }
 prompt        tr:hover {
 prompt        background-color: #f5f5f5;;
+prompt        border-top-left-radius: 1.5px;;
+prompt        border-top-right-radius: 1.5px;;
+prompt        border-bottom-left-radius: 1.5px;;
+prompt        border-bottom-right-radius: 1.5px;;
 prompt        }
 prompt        .header {
 prompt          background: #65a1ac;;
@@ -270,7 +282,10 @@ prompt    <div class="main-wrapper" id="main-wrapper">
 prompt
 prompt
 prompt      <h1>Database Performance Comparison Report</h1>
-prompt      <h5>for Oracle 12c - 19c Enterprise Editions (based on AWR data)</h5>
+prompt      <h5>
+prompt      <span style="text-align:left;">for Oracle 12c - 19c Enterprise Editions (based on AWR data)</span>
+prompt      <span style="float:right;">v2025.12</span>
+prompt      </h5>
 prompt      <div id="chartMain">  </div>
 prompt      <main>
 prompt        <h2>
@@ -613,7 +628,17 @@ prompt  .attr("class", "layer");;
 prompt  layer.append("path")
 prompt  .attr("class","area")
 prompt  .style("fill", function(d) {return z(d.key);})
-prompt  .attr("d", area);;
+prompt  .attr("d", area)
+prompt      .on('mouseover', function (d, i) {
+prompt          d3.select(this).transition()
+prompt              .duration('50')
+prompt              .attr('opacity', '.85');;
+prompt      })
+prompt      .on('mouseout', function (d, i) {
+prompt          d3.select(this).transition()
+prompt              .duration('50')
+prompt              .attr('opacity', '1');;
+prompt      });;
 prompt  g.append("g")
 prompt  .attr("class", "axis axis--x")
 prompt  .attr("transform", "translate(0, " + height +")")
@@ -658,6 +683,7 @@ prompt  legend.append("rect")
 prompt  .attr("x", width+15)
 prompt  .attr("width", 13)
 prompt  .attr("height", 13)
+prompt  .attr('rx', 5)
 prompt  .attr("fill", z);;
 prompt  legend.append("text")
 prompt  .attr("x", width + 36)
@@ -716,14 +742,25 @@ prompt  .attr("fill", function(d) {return z(d.key); })
 prompt  .selectAll("rect")
 prompt  .data(function(d) {return d;})
 prompt  .enter().append("rect")
-prompt  .attr("x", function(d) {return x(d.data.series); })
+prompt  .attr("x", function(d) {return x(d.data.series) + 3; })
 prompt  .attr("y", function(d) {return y(d[1]); })
+prompt  .attr('rx', 1.5)
 prompt  .attr("height", function(d) { return y(d[0]) - y(d[1]); })
-prompt  .attr("width", x.bandwidth());;
+prompt  .attr("width", x.bandwidth())
+prompt  .on('mouseover', function (d, i) {
+prompt          d3.select(this).transition()
+prompt              .duration('50')
+prompt              .attr('opacity', '.85');;
+prompt      })
+prompt      .on('mouseout', function (d, i) {
+prompt          d3.select(this).transition()
+prompt              .duration('50')
+prompt              .attr('opacity', '1');;
+prompt      });;
 prompt
 prompt  g.append("g")
 prompt  .attr("class", "axis")
-prompt  .attr("transform", "translate(0, " + height +")")
+prompt  .attr("transform", "translate(3, " + height +")")
 prompt  .call(d3.axisBottom(x));;
 prompt
 prompt
@@ -755,6 +792,7 @@ prompt  legend.append("rect")
 prompt  .attr("x", width-180)
 prompt  .attr("width", 13)
 prompt  .attr("height", 13)
+prompt  .attr('rx', 5)
 prompt  .attr("fill", z);;
 prompt  legend.append("text")
 prompt  .attr("x", width - 160)
@@ -891,8 +929,8 @@ prompt  return table;;
 prompt  }
 prompt
 prompt  function outputFormat(pcolumn, pvalue) {
-prompt  if (timeFormatArray.includes(pcolumn)) {if (pvalue > 999) {return execFormat(+pvalue);} else {return timeFormat(+pvalue);}};;
-prompt  if (execFormatArray.includes(pcolumn)) {return execFormat(+pvalue);};;
+prompt  if (timeFormatArray.includes(pcolumn)) { if (Math.abs(pvalue) > 999) { return execFormat(+pvalue); } else { return timeFormat(+pvalue); } };;
+prompt  if (execFormatArray.includes(pcolumn)) { if (Math.abs(pvalue) < 10) { return timeFormat(+pvalue); } else { return execFormat(+pvalue); } };;
 prompt  if (percentFormatArray.includes(pcolumn)) {return percentFormat(+pvalue);};;
 prompt  return pvalue;;
 prompt  }
@@ -910,12 +948,12 @@ prompt    if (waitClassGroups["Wait Classes"].columns) svgBarChartDraw(400,450,w
 prompt
 prompt
 prompt    ["Scheduler","User I/O","System I/O","Concurrency","Application","Commit","Configuration","Administrative","Network","Queueing","Cluster","Other"].forEach(function(d) {
-prompt    if (waitClassGroups[d].columns) svgBarChartDraw(400,450,waitClassGroups[d],"#chartWaitClasses",cat20Colors,d,"Seconds");;
+prompt    if (waitClassGroups[d].columns && ((waitClassGroups[d][0].total + waitClassGroups[d][1].total) > 0)) svgBarChartDraw(400,450,waitClassGroups[d],"#chartWaitClasses",cat20Colors,d,"Seconds");;
 prompt
 prompt    });;
 prompt
 prompt    sqlStatsChartDetails.forEach(function(d) {
-prompt    svgBarChartDraw(400,450,sqlStatsGroups[d.chartId],"#chartSqlStatCharts",cat20Colors,d.chartName,d.axisName);;
+prompt    if ((sqlStatsGroups[d.chartId][0].total + sqlStatsGroups[d.chartId][1].total) > 0) svgBarChartDraw(400,450,sqlStatsGroups[d.chartId],"#chartSqlStatCharts",cat20Colors,d.chartName,d.axisName);;
 prompt    });;
 prompt
 prompt    sqlStatsTables.forEach(function(d) {
@@ -1220,8 +1258,8 @@ WHERE dbid = &db_id_br
 and instance_number = &inst_id_br
 and snap_id between &start_sample_id_br+1 and &finish_sample_id_br
 GROUP BY SQL_ID,PLAN_HASH_VALUE))
-, s as (select '3883kfsmb5x5a' sql_id, 'ModuleA' sql_type from dual union
-select 'b33svtu2c336d' sql_id, 'ModuleB' sql_type from dual)
+, s as (select '520mkxqpf15q8' sql_id, 'dual_example' sql_type from dual union
+select 'sqlid2' sql_id, 'sql_type2' sql_type from dual)
 , x as (SELECT case when s.sql_id is not null then s.sql_type
        when s.sql_id is null and br.sql_id_b is null then '(+) New'
        else 'Unclassified' end sql_type
@@ -1456,8 +1494,8 @@ and instance_number = &inst_id_br
 and snap_id between &start_sample_id_br+1 and &finish_sample_id_br
 GROUP BY SQL_ID,PLAN_HASH_VALUE)
 WHERE ABS(ELAPSED_TIME)+ABS(BUFFER_GETS)+ABS(DISK_READS)+ABS(EXECUTIONS)>0)
-, s as (select '3883kfsmb5x5a' sql_id, 'ModuleA' sql_type from dual union
-select 'b33svtu2c336d' sql_id, 'ModuleB' sql_type from dual)
+, s as (select '520mkxqpf15q8' sql_id, 'dual_example' sql_type from dual union
+select 'sqlid2' sql_id, 'sql_type2' sql_type from dual)
 , x as (select
 case when br.sql_id_b is null then '0: New (+)'
        when tr.sql_id_t is null then '0: Aged out (-)'
@@ -1640,8 +1678,8 @@ WHERE ((PARSE_CALLS_R<=20 AND PARSE_CALLS_T>0) OR
 (PHYSICAL_WRITE_REQUESTS_R<=20 AND PHYSICAL_WRITE_REQUESTS_T>0) OR
 (PHYSICAL_WRITE_BYTES_R<=20 AND PHYSICAL_WRITE_BYTES_T>0) OR
 (IO_INTERCONNECT_BYTES_R<=20 AND IO_INTERCONNECT_BYTES_T>0)))
-, s as (select '3883kfsmb5x5a' sql_id, 'ModuleA' sql_type from dual union
-select 'b33svtu2c336d' sql_id, 'ModuleB' sql_type from dual)
+, s as (select '520mkxqpf15q8' sql_id, 'dual_example' sql_type from dual union
+select 'sqlid2' sql_id, 'sql_type2' sql_type from dual)
 , x as (SELECT case when s.sql_id is not null then s.sql_type
        else 'Unclassified' end sql_type
 , tr.sql_id_t, t.sql_text

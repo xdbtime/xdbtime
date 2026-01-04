@@ -1,12 +1,12 @@
-<!-- 
-    Copyright 2016-2025 Taras Guliak XDBTIME
+<!--
+    Copyright 2016-2026 Taras Guliak XDBTIME Community Edition for MySQL
     All rights reserved.
 
     ========================================
-    
+
     D3
-    
-    Copyright 2010-2025 Mike Bostock
+
+    Copyright 2010-2023 Mike Bostock
 
     Permission to use, copy, modify, and/or distribute this software for any purpose
     with or without fee is hereby granted, provided that the above copyright notice
@@ -24,7 +24,6 @@
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -133,16 +132,28 @@
 
         td {
             border-bottom: 0.5px solid #ddd;
+            border-top-left-radius: 1.5px;
+            border-top-right-radius: 1.5px;
+            border-bottom-left-radius: 1.5px;
+            border-bottom-right-radius: 1.5px;
         }
 
         th {
             font-weight: bold;
             background-color: #999;
             color: white;
+            border-top-left-radius: 1.5px;
+            border-top-right-radius: 1.5px;
+            border-bottom-left-radius: 1.5px;
+            border-bottom-right-radius: 1.5px;
         }
 
         tr:hover {
             background-color: #f5f5f5;
+            border-top-left-radius: 1.5px;
+            border-top-right-radius: 1.5px;
+            border-bottom-left-radius: 1.5px;
+            border-bottom-right-radius: 1.5px;
         }
 
         .header {
@@ -156,134 +167,135 @@
     </style>
 
 </head>
-
 <body>
-    <header class="header">
-        <a href="https://www.xdbtime.com">
-            <img src="https://www.xdbtime.com/images/logo-white.png" alt="" height="25" />
-        </a>
-    </header>
-    <div class="main-wrapper" id="main-wrapper">
-
-
-        <h1>Database Performance Comparison Report - MySQL</h1>
-        <div id="chart1"> </div>
-        <main>
-            <h2>
-                <button aria-expanded="false">
-                    Global Status
-                    <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
-                        <rect class="vert" height="8" width="2" y="1" x="4" />
-                        <rect height="2" width="8" y="4" x="1" />
-                    </svg>
-                </button>
-            </h2>
-            <div id="chartGlobalStatus" hidden>
-                <p>Global Status is based on global_status view. </p>
-            </div>
-            <h2>
-                <button aria-expanded="false">
-                    Waits Summary
-                    <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
-                        <rect class="vert" height="8" width="2" y="1" x="4" />
-                        <rect height="2" width="8" y="4" x="1" />
-                    </svg>
-                </button>
-            </h2>
-            <div id="chartWaitsSummary" hidden>
-                <p>Waits Summary charts are based on events_waits_summary_global_by_event_name view </p>
-            </div>
-            <h2>
-                <button aria-expanded="false">
-                    Waits TimeSeries
-                    <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
-                        <rect class="vert" height="8" width="2" y="1" x="4" />
-                        <rect height="2" width="8" y="4" x="1" />
-                    </svg>
-                </button>
-            </h2>
-            <div id="chartWaitsTimeSeries" hidden>
-                <p>Waits Summary charts are based on events_waits_summary_global_by_event_name view </p>
-            </div>
-            <h2>
-                <button aria-expanded="false">
-                    Stages Summary
-                    <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
-                        <rect class="vert" height="8" width="2" y="1" x="4" />
-                        <rect height="2" width="8" y="4" x="1" />
-                    </svg>
-                </button>
-            </h2>
-            <div id="chartStagesSummary" hidden>
-                <p>Stages Summary charts are based on events_stages_summary_global_by_event_name view </p>
-            </div>
-            <h2>
-                <button aria-expanded="false">
-                    Statements Summary
-                    <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
-                        <rect class="vert" height="8" width="2" y="1" x="4" />
-                        <rect height="2" width="8" y="4" x="1" />
-                    </svg>
-                </button>
-            </h2>
-            <div id="chartStatementsSummary" hidden>
-                <p>Statements Summary charts are based on events_statements_summary_global_by_event_name view </p>
-            </div>
-            <h2>
-                <button aria-expanded="false">
-                    Statements TimeSeries
-                    <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
-                        <rect class="vert" height="8" width="2" y="1" x="4" />
-                        <rect height="2" width="8" y="4" x="1" />
-                    </svg>
-                </button>
-            </h2>
-            <div id="chartStatementsTimeSeries" hidden>
-                <p>Statements Summary charts are based on events_statements_summary_global_by_event_name view </p>
-            </div>
-            <h2>
-                <button aria-expanded="false">
-                    SQL Statistics Charts
-                    <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
-                        <rect class="vert" height="8" width="2" y="1" x="4" />
-                        <rect height="2" width="8" y="4" x="1" />
-                    </svg>
-                </button>
-            </h2>
-            <div id="chart5" hidden>
-                <p>SQL Statistics charts are based on events_statements_summary_by_digest. SQL statistics are grouped by DIGEST. SQL classification is based on DIGEST. There are 3 default classes: Aged Out, New
-                    and Unclassified. </p>
-            </div>
-            <h2>
-                <button aria-expanded="false">
-                    SQL Statistics Tables
-                    <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
-                        <rect class="vert" height="8" width="2" y="1" x="4" />
-                        <rect height="2" width="8" y="4" x="1" />
-                    </svg>
-                </button>
-            </h2>
-            <div id="chart6" hidden>
-                <p>SQL Statistics charts are based on events_statements_summary_by_digest. SQL statistics are grouped by DIGEST. 
-                    SQL classification is based on DIGEST. There are 3 default classes: Aged Out, New and
-                    Unclassified. </p>
-            </div>
-            <h2>
-                <button aria-expanded="false">
-                    SQL Text
-                    <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
-                        <rect class="vert" height="8" width="2" y="1" x="4" />
-                        <rect height="2" width="8" y="4" x="1" />
-                    </svg>
-                </button>
-            </h2>
-            <div id="chartSqlText" hidden>
-                <p>SQL Text is extracted from events_statements_summary_by_digest. </p>
-            </div>
-        </main>
-    </div>
+<header class="header">
+    <a href="https://www.xdbtime.com">
+        <img src="https://www.xdbtime.com/images/logo-white.png" alt="" height="25"/>
+    </a>
+</header>
+<div class="main-wrapper" id="main-wrapper">
+    <h1>Database Performance Comparison Report</h1>
+    <h5>
+        <span style="text-align:left;">for MySQL (using metrics from xdbmonitoring database)</span>
+        <span style="float:right;">v2025.12</span>
+    </h5>
+    <div id="chart1"></div>
+    <main>
+        <h2>
+            <button aria-expanded="false">
+                Global Status
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
+                    <rect class="vert" height="8" width="2" y="1" x="4"/>
+                    <rect height="2" width="8" y="4" x="1"/>
+                </svg>
+            </button>
+        </h2>
+        <div id="chartGlobalStatus" hidden>
+            <p>Global Status is based on global_status view. </p>
+        </div>
+        <h2>
+            <button aria-expanded="false">
+                Waits Summary
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
+                    <rect class="vert" height="8" width="2" y="1" x="4"/>
+                    <rect height="2" width="8" y="4" x="1"/>
+                </svg>
+            </button>
+        </h2>
+        <div id="chartWaitsSummary" hidden>
+            <p>Waits Summary charts are based on events_waits_summary_global_by_event_name view </p>
+        </div>
+        <h2>
+            <button aria-expanded="false">
+                Waits TimeSeries
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
+                    <rect class="vert" height="8" width="2" y="1" x="4"/>
+                    <rect height="2" width="8" y="4" x="1"/>
+                </svg>
+            </button>
+        </h2>
+        <div id="chartWaitsTimeSeries" hidden>
+            <p>Waits Summary charts are based on events_waits_summary_global_by_event_name view </p>
+        </div>
+        <h2>
+            <button aria-expanded="false">
+                Stages Summary
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
+                    <rect class="vert" height="8" width="2" y="1" x="4"/>
+                    <rect height="2" width="8" y="4" x="1"/>
+                </svg>
+            </button>
+        </h2>
+        <div id="chartStagesSummary" hidden>
+            <p>Stages Summary charts are based on events_stages_summary_global_by_event_name view </p>
+        </div>
+        <h2>
+            <button aria-expanded="false">
+                Statements Summary
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
+                    <rect class="vert" height="8" width="2" y="1" x="4"/>
+                    <rect height="2" width="8" y="4" x="1"/>
+                </svg>
+            </button>
+        </h2>
+        <div id="chartStatementsSummary" hidden>
+            <p>Statements Summary charts are based on events_statements_summary_global_by_event_name view </p>
+        </div>
+        <h2>
+            <button aria-expanded="false">
+                Statements TimeSeries
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
+                    <rect class="vert" height="8" width="2" y="1" x="4"/>
+                    <rect height="2" width="8" y="4" x="1"/>
+                </svg>
+            </button>
+        </h2>
+        <div id="chartStatementsTimeSeries" hidden>
+            <p>Statements Summary charts are based on events_statements_summary_global_by_event_name view </p>
+        </div>
+        <h2>
+            <button aria-expanded="false">
+                SQL Statistics Charts
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
+                    <rect class="vert" height="8" width="2" y="1" x="4"/>
+                    <rect height="2" width="8" y="4" x="1"/>
+                </svg>
+            </button>
+        </h2>
+        <div id="chart5" hidden>
+            <p>SQL Statistics charts are based on events_statements_summary_by_digest. SQL statistics are grouped by
+                DIGEST. SQL classification is based on DIGEST. There are 3 default classes: Aged Out, New
+                and Unclassified. </p>
+        </div>
+        <h2>
+            <button aria-expanded="false">
+                SQL Statistics Tables
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
+                    <rect class="vert" height="8" width="2" y="1" x="4"/>
+                    <rect height="2" width="8" y="4" x="1"/>
+                </svg>
+            </button>
+        </h2>
+        <div id="chart6" hidden>
+            <p>SQL Statistics charts are based on events_statements_summary_by_digest. SQL statistics are grouped by DIGEST.
+                SQL classification is based on DIGEST. There are 3 default classes: Aged Out, New and
+                Unclassified. </p>
+        </div>
+        <h2>
+            <button aria-expanded="false">
+                SQL Text
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 10 10">
+                    <rect class="vert" height="8" width="2" y="1" x="4"/>
+                    <rect height="2" width="8" y="4" x="1"/>
+                </svg>
+            </button>
+        </h2>
+        <div id="chartSqlText" hidden>
+            <p>SQL Text is extracted from events_statements_summary_by_digest. </p>
+        </div>
+    </main>
+</div>
 </body>
-
 </html>
 
 
@@ -304,6 +316,7 @@
     document.body.prepend(preHeader);
 
     window.addEventListener('resize', () => {
+        // console.log(getWrapperWidth());
         // TODO: renderAllComponents
     });
 
@@ -472,7 +485,7 @@
         return waitsTsArray
         }
 
-    var svgDbTimeDraw = function (svgWidth, svgHeight, inpArray, svgObjName, withLegend, chartTitle, chartSubTitle, minDate, maxDate, maxX, pKeys, pColors, pAxisName) {
+    var svgStackedAreaDraw = function (svgWidth, svgHeight, inpArray, svgObjName, withLegend, chartTitle, chartSubTitle, minDate, maxDate, maxX, pKeys, pColors, pAxisName) {
         var margin = { top: 100, right: 100, bottom: 30, left: 40 },
             width = svgWidth - margin.left - margin.right,
             height = svgHeight - margin.top - margin.bottom;
@@ -492,11 +505,11 @@
         z.domain(pKeys);
         stack.keys(pKeys);
 
-        var svgDbTime = d3.select(svgObjName).append("svg")
+        var svgStackedArea = d3.select(svgObjName).append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom);
 
-        var g = svgDbTime.append("g")
+        var g = svgStackedArea.append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
         x.domain([minDate, maxDate]);
@@ -512,7 +525,17 @@
         layer.append("path")
             .attr("class", "area")
             .style("fill", function (d) { return z(d.key); })
-            .attr("d", area);
+            .attr("d", area)
+            .on('mouseover', function (d, i) {
+                d3.select(this).transition()
+                    .duration('50')
+                    .attr('opacity', '.85');
+            })
+            .on('mouseout', function (d, i) {
+                d3.select(this).transition()
+                    .duration('50')
+                    .attr('opacity', '1');
+            });
         g.append("g")
             .attr("class", "axis axis--x")
             .attr("transform", "translate(0, " + height + ")")
@@ -557,6 +580,7 @@
                 .attr("x", width + 15)
                 .attr("width", 13)
                 .attr("height", 13)
+                .attr('rx', 5)
                 .attr("fill", z);
             legend.append("text")
                 .attr("x", width + 36)
@@ -565,92 +589,8 @@
                 .text(function (d) { return d; });
 
         }
-        return svgDbTime;
-    }
-
-    var svgStackedAreaDraw = function (svgWidth, svgHeight, inpArray, svgObjName, withLegend, chartName, minDate, maxDate, maxX, pKeys, pColors) {
-        var margin = { top: 50, right: 150, bottom: 30, left: 40 },
-            width = svgWidth - margin.left - margin.right,
-            height = svgHeight - margin.top - margin.bottom;
-        var x = d3.scaleTime().range([0, width]),
-            y = d3.scaleLinear().range([height, 0]),
-            z = pColors;
-
-        var stack = d3.stack();
-
-        var area = d3.area()
-            .x(function (d, i) { return x(d.data.date); })
-            .y0(function (d) { return y(d[0]); })
-            .y1(function (d) { return y(d[1]); });
-
-        y.domain([0, maxX]).nice();
-        z.domain(pKeys);
-        stack.keys(pKeys);
-
-        var svgStackedArea = d3.select(svgObjName).append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom);
-
-        var g = svgStackedArea.append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-        x.domain([minDate, maxDate]);
-
-        var layer = g.selectAll(".layer")
-            .data(stack(inpArray))
-            .enter().append("g")
-            .attr("class", "layer");
-        layer.append("path")
-            .attr("class", "area")
-            .style("fill", function (d) { return z(d.key); })
-            .attr("d", area);
-        g.append("g")
-            .attr("class", "axis axis--x")
-            .attr("transform", "translate(0, " + height + ")")
-            .call(d3.axisBottom(x));
-        g.append("g")
-            .attr("class", "axis axis--y")
-            .call(d3.axisLeft(y).ticks(null, "s"));
-        g.append("g")
-            .attr("class", "axis")
-            .call(d3.axisLeft(y).ticks(null, "s"))
-            .append("text")
-            .attr("x", 2)
-            .attr("y", y(y.ticks().pop()) + 0.5)
-            .attr("dy", "0.32em")
-            .attr("fill", "#000")
-            .attr("text-anchor", "start")
-            .text('DB Sessions');
-        g.append("text")
-            .attr("x", 0)
-            .attr("y", 0 - (margin.top / 4))
-            .attr("text-anchor", "left")
-            .style("font-size", "16px")
-            .text(minDate.toLocaleString('en-us', date_output));
-        if (withLegend == 1) {
-            var legend = g.append("g")
-                .attr("font-size", "10px")
-                .attr("text-anchor", "begin")
-                .selectAll("g")
-                .data(pKeys.slice().reverse())
-                .enter().append("g")
-                .attr("transform", function (d, i) { return "translate(0," + i * 16 + ")"; });
-            legend.append("rect")
-                .attr("x", width + 20)
-                .attr("width", 10)
-                .attr("height", 10)
-                .attr("fill", z);
-            legend.append("text")
-                .attr("x", width + 36)
-                .attr("y", 5.5)
-                .attr("dy", "0.32em")
-                .text(function (d) { return d; });
-
-        }
         return svgStackedArea;
     }
-
-
 
     var svgBarChartDraw = function (svgWidth, svgHeight, statName, svgObjName, pColors, chartName, axisName) {
         var margin = { top: 100, right: 20, bottom: 30, left: 40 },
@@ -666,7 +606,6 @@
 
         var barChartData = statName;
         var keys = barChartData.columns;
-
 
         var stack = d3.stack();
 
@@ -689,8 +628,6 @@
         var g = svgBarChart.append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-
-
         g.append("g")
             .selectAll("g")
             .data(d3.stack().keys(keys)(barChartData))
@@ -699,16 +636,26 @@
             .selectAll("rect")
             .data(function (d) { return d; })
             .enter().append("rect")
-            .attr("x", function (d) { return x(d.data.series); })
+            .attr("x", function (d) { return x(d.data.series) + 3; })
             .attr("y", function (d) { return y(d[1]); })
+            .attr('rx', 1.5)
             .attr("height", function (d) { return y(d[0]) - y(d[1]); })
-            .attr("width", x.bandwidth());
+            .attr("width", x.bandwidth())
+            .on('mouseover', function (d, i) {
+                d3.select(this).transition()
+                    .duration('50')
+                    .attr('opacity', '.85');
+            })
+            .on('mouseout', function (d, i) {
+                d3.select(this).transition()
+                    .duration('50')
+                    .attr('opacity', '1');
+            });
 
         g.append("g")
             .attr("class", "axis")
-            .attr("transform", "translate(0, " + height + ")")
+            .attr("transform", "translate(3, " + height + ")")
             .call(d3.axisBottom(x));
-
 
         g.append("g")
             .attr("class", "axis")
@@ -738,6 +685,7 @@
             .attr("x", width - 180)
             .attr("width", 13)
             .attr("height", 13)
+            .attr('rx', 5)
             .attr("fill", z);
         legend.append("text")
             .attr("x", width - 160)
@@ -748,59 +696,51 @@
         return svgBarChart;
     }
 
-    function getMaxDiffSqlStatMySQL(statName) {
-        var maxValue = d3.max(sqlStatsMySQL[statName], function (d) { return d3.max([0, d[sqlStatsTableDetailsMySQL[statName]["colDiff"]]]); });
+    function getMaxDiffSqlStat(statName) {
+        var maxValue = d3.max(sqlStats[statName], function (d) { return d3.max([0, d[sqlStatsTableDetails[statName]["colDiff"]]]); });
         if (maxValue == 0) { return 0.01 } else { return maxValue; }
     }
 
-    function getMinDiffSqlStatMySQL(statName) {
-        var minValue = d3.min(sqlStatsMySQL[statName], function (d) { return d3.min([d[sqlStatsTableDetailsMySQL[statName]["colDiff"]], 0]); });
+    function getMinDiffSqlStat(statName) {
+        var minValue = d3.min(sqlStats[statName], function (d) { return d3.min([d[sqlStatsTableDetails[statName]["colDiff"]], 0]); });
         if (minValue == 0) { return 0.01 } else { return minValue }
     }
 
-    function sqlTableSummaryTextMySQL(statName) {
-        var outputString = percentFormat(d3.sum(sqlStatsMySQL[statName], function (d) { return d[sqlStatsTableDetailsMySQL[statName]["colShare"]]; })) + " of " + sqlStatsTableDetailsMySQL[statName]["description"] + " is covered by TOP " +
-            timeFormat(d3.max(sqlStatsMySQL[statName], function (d) { return d["RANK"]; })) + " SQLs found in Performance Schema. ";
+    function sqlTableSummaryText(statName) {
+        var outputString = percentFormat(d3.sum(sqlStats[statName], function (d) { return d[sqlStatsTableDetails[statName]["colShare"]]; })) + " of " + sqlStatsTableDetails[statName]["description"] + " is covered by TOP " +
+            timeFormat(d3.max(sqlStats[statName], function (d) { return d["RANK"]; })) + " SQLs found in Performance Schema. ";
 
-        if (d3.sum(sqlStatsMySQL[statName], function (d) { return d[sqlStatsTableDetailsMySQL[statName]["colDiff"]]; }) > 0) {
-            outputString = outputString + sqlStatsTableDetailsMySQL[statName]["description"] + " (TOP " + timeFormat(d3.max(sqlStatsMySQL[statName], function (d) { return d["RANK"]; })) + " SQLs) has been increased by "
-                + outputFormat(sqlStatsTableDetailsMySQL[statName]["colDiff"], d3.sum(sqlStatsMySQL[statName], function (d) { return d[sqlStatsTableDetailsMySQL[statName]["colDiff"]]; })) + " units (from "
-                + outputFormat(sqlStatsTableDetailsMySQL[statName]["colDiff"], d3.sum(sqlStatsMySQL[statName], function (d) { return d[sqlStatsTableDetailsMySQL[statName]["colBaseline"]]; })) + " to "
-                + outputFormat(sqlStatsTableDetailsMySQL[statName]["colDiff"], d3.sum(sqlStatsMySQL[statName], function (d) { return d[sqlStatsTableDetailsMySQL[statName]["colTestrun"]]; })) + " ).";
+        if (d3.sum(sqlStats[statName], function (d) { return d[sqlStatsTableDetails[statName]["colDiff"]]; }) > 0) {
+            outputString = outputString + sqlStatsTableDetails[statName]["description"] + " (TOP " + timeFormat(d3.max(sqlStats[statName], function (d) { return d["RANK"]; })) + " SQLs) has been increased by "
+                + outputFormat(sqlStatsTableDetails[statName]["colDiff"], d3.sum(sqlStats[statName], function (d) { return d[sqlStatsTableDetails[statName]["colDiff"]]; })) + " units (from "
+                + outputFormat(sqlStatsTableDetails[statName]["colDiff"], d3.sum(sqlStats[statName], function (d) { return d[sqlStatsTableDetails[statName]["colBaseline"]]; })) + " to "
+                + outputFormat(sqlStatsTableDetails[statName]["colDiff"], d3.sum(sqlStats[statName], function (d) { return d[sqlStatsTableDetails[statName]["colTestrun"]]; })) + " ).";
             return outputString;
         }
         else {
-            outputString = outputString + sqlStatsTableDetailsMySQL[statName]["description"] + " (TOP " + timeFormat(d3.max(sqlStatsMySQL[statName], function (d) { return d["RANK"]; })) + " SQLs) has been decreased by "
-                + outputFormat(sqlStatsTableDetailsMySQL[statName]["colDiff"], -1 * d3.sum(sqlStatsMySQL[statName], function (d) { return d[sqlStatsTableDetailsMySQL[statName]["colDiff"]]; })) + " units (from "
-                + outputFormat(sqlStatsTableDetailsMySQL[statName]["colDiff"], d3.sum(sqlStatsMySQL[statName], function (d) { return d[sqlStatsTableDetailsMySQL[statName]["colBaseline"]]; })) + " to "
-                + outputFormat(sqlStatsTableDetailsMySQL[statName]["colDiff"], d3.sum(sqlStatsMySQL[statName], function (d) { return d[sqlStatsTableDetailsMySQL[statName]["colTestrun"]]; })) + " ).";
+            outputString = outputString + sqlStatsTableDetails[statName]["description"] + " (TOP " + timeFormat(d3.max(sqlStats[statName], function (d) { return d["RANK"]; })) + " SQLs) has been decreased by "
+                + outputFormat(sqlStatsTableDetails[statName]["colDiff"], -1 * d3.sum(sqlStats[statName], function (d) { return d[sqlStatsTableDetails[statName]["colDiff"]]; })) + " units (from "
+                + outputFormat(sqlStatsTableDetails[statName]["colDiff"], d3.sum(sqlStats[statName], function (d) { return d[sqlStatsTableDetails[statName]["colBaseline"]]; })) + " to "
+                + outputFormat(sqlStatsTableDetails[statName]["colDiff"], d3.sum(sqlStats[statName], function (d) { return d[sqlStatsTableDetails[statName]["colTestrun"]]; })) + " ).";
             return outputString;
         }
-
-
-        return outputString;
-        
     }
 
-
-
-
     function getColspan(pcolumn) {
-        if (sqlStatsHeaderColspan2MySQL.includes(pcolumn)) { return 2; };
-        if (sqlStatsHeaderColspan3MySQL.includes(pcolumn)) { return 3; };
-        if (sqlStatsHeaderColspan4MySQL.includes(pcolumn)) { return 4; };
-        if (sqlStatsHeaderColspan5MySQL.includes(pcolumn)) { return 5; };
-        if (sqlStatsHeaderColspan6MySQL.includes(pcolumn)) { return 6; };
-        if (sqlStatsHeaderColspan7MySQL.includes(pcolumn)) { return 7; };
+        if (sqlStatsHeaderColspan2.includes(pcolumn)) { return 2; };
+        if (sqlStatsHeaderColspan3.includes(pcolumn)) { return 3; };
+        if (sqlStatsHeaderColspan4.includes(pcolumn)) { return 4; };
+        if (sqlStatsHeaderColspan5.includes(pcolumn)) { return 5; };
+        if (sqlStatsHeaderColspan6.includes(pcolumn)) { return 6; };
+        if (sqlStatsHeaderColspan7.includes(pcolumn)) { return 7; };
         return 1;
     }
 
-    function drawTable(data, columns, header1, header2, tableName, svgName, summaryText, tableDescription) {
-
+    function drawTable(screenWidth, data, columns, header1, header2, tableName, svgName, summaryText, tableDescription) {
 
         d3.select(svgName)
             .append('svg')
-            .attr('width', 2100)
+            .attr('width', screenWidth)
             .attr('height', 50)
             .append('g')
             .attr("transform", "translate(" + 0 + "," + 0 + ")")
@@ -814,7 +754,7 @@
             .text(tableName);
         d3.select(svgName)
             .append('svg')
-            .attr('width', 2100)
+            .attr('width', screenWidth)
             .attr('height', 10)
             .append('g')
             .attr("transform", "translate(" + 0 + "," + 0 + ")")
@@ -826,6 +766,7 @@
             .attr("font-weight", "bold")
             .attr("class", "chartColorGrey")
             .text(tableDescription);
+
         var table = d3.select(svgName).append("table"),
             thead = table.append("thead"),
             tbody = table.append("tbody");
@@ -843,8 +784,6 @@
             .enter()
             .append("th")
             .text(function (column) { return column; });
-
-
 
         var rows = tbody.selectAll("tr")
             .data(data)
@@ -867,7 +806,7 @@
 
         d3.select(svgName)
             .append('svg')
-            .attr('width', 2100)
+            .attr('width', screenWidth)
             .attr('height', 40)
             .append('g')
             .attr("transform", "translate(" + 0 + "," + 0 + ")")
@@ -882,72 +821,75 @@
     }
 
     function outputFormat(pcolumn, pvalue) {
-        if (timeFormatArrayMySQL.includes(pcolumn)) { if (Math.abs(pvalue) > 999) { return execFormat(+pvalue); } else { return timeFormat(+pvalue); } };
-        if (execFormatArrayMySQL.includes(pcolumn)) { if (Math.abs(pvalue) < 10) { return timeFormat(+pvalue); } else { return execFormat(+pvalue); } };
-        if (percentFormatArrayMySQL.includes(pcolumn)) { return percentFormat(+pvalue); };
+        if (timeFormatArray.includes(pcolumn)) { if (Math.abs(pvalue) > 999) { return execFormat(+pvalue); } else { return timeFormat(+pvalue); } };
+        if (execFormatArray.includes(pcolumn)) { if (Math.abs(pvalue) < 10) { return timeFormat(+pvalue); } else { return execFormat(+pvalue); } };
+        if (percentFormatArray.includes(pcolumn)) { return percentFormat(+pvalue); };
         return pvalue;
     }
 
     function drawAllObjects(pScreenWidth) {
-        if ((statementsSummaryGroupsMySQL["Wait Classes"][0]["total"] + statementsSummaryGroupsMySQL["Wait Classes"][1]["total"])>0) svgBarChartDraw(400, 450, statementsSummaryGroupsMySQL["Wait Classes"], "#chart1", waitClassColors, "Statements Summary", "Seconds");
-        if ((waitsSummaryGroupsMySQL["Wait Classes"][0]["total"] + waitsSummaryGroupsMySQL["Wait Classes"][1]["total"])>0) svgBarChartDraw(400, 450, waitsSummaryGroupsMySQL["Wait Classes"], "#chart1", waitClassColors, "Waits Summary", "Seconds");
-        if ((stagesSummaryGroupsMySQL["Wait Classes"][0]["total"] + stagesSummaryGroupsMySQL["Wait Classes"][1]["total"])>0) svgBarChartDraw(400, 450, stagesSummaryGroupsMySQL["Wait Classes"], "#chart1", waitClassColors, "Stages Summary", "Seconds");
+
+        if ((statementsSummaryGroups["Wait Classes"][0]["total"] + statementsSummaryGroups["Wait Classes"][1]["total"])>0) svgBarChartDraw(400, 450, statementsSummaryGroups["Wait Classes"], "#chart1", waitClassColors, "Statements Summary", "Seconds");
+        if ((waitsSummaryGroups["Wait Classes"][0]["total"] + waitsSummaryGroups["Wait Classes"][1]["total"])>0) svgBarChartDraw(400, 450, waitsSummaryGroups["Wait Classes"], "#chart1", waitClassColors, "Waits Summary", "Seconds");
+        if ((stagesSummaryGroups["Wait Classes"][0]["total"] + stagesSummaryGroups["Wait Classes"][1]["total"])>0) svgBarChartDraw(400, 450, stagesSummaryGroups["Wait Classes"], "#chart1", waitClassColors, "Stages Summary", "Seconds");
         
         var maxStatementsTSAxis = Math.max(d3.max(stmtTsArrayBr, function(d){return d.total;}), d3.max(stmtTsArrayTr, function(d){return d.total;}));
 
-        svgDbTimeDraw(pScreenWidth,380,stmtTsArrayBr,"#chartStatementsTimeSeries",1,"Baseline", startTimeBr.toLocaleString('en-us', date_output), startTimeBr,finishTimeBr,maxStatementsTSAxis, stmtKeys, cat20Colors,"Seconds");
-        svgDbTimeDraw(pScreenWidth,380,stmtTsArrayTr,"#chartStatementsTimeSeries",1,"Test Run", startTimeTr.toLocaleString('en-us', date_output), startTimeTr,finishTimeTr,maxStatementsTSAxis, stmtKeys, cat20Colors,"Seconds");
-        
+
         var maxWaitsTSAxis = Math.max(d3.max(waitsTsArrayBr, function(d){return d.total;}), d3.max(waitsTsArrayTr, function(d){return d.total;}));
 
-        svgDbTimeDraw(pScreenWidth,380,waitsTsArrayBr,"#chartWaitsTimeSeries",1,"Baseline", startTimeBr.toLocaleString('en-us', date_output), startTimeBr,finishTimeBr,maxWaitsTSAxis, waitsKeys, waitClassColors,"Seconds");
-        svgDbTimeDraw(pScreenWidth,380,waitsTsArrayTr,"#chartWaitsTimeSeries",1,"Test Run", startTimeTr.toLocaleString('en-us', date_output), startTimeTr,finishTimeTr,maxWaitsTSAxis, waitsKeys, waitClassColors,"Seconds");
+        svgStackedAreaDraw(pScreenWidth, 380, stmtTsArrayBr, "#chartStatementsTimeSeries", 1, "Baseline", startTimeBr.toLocaleString('en-us', date_output), startTimeBr, finishTimeBr, maxStatementsTSAxis, stmtKeys, cat20Colors, "Seconds");
+        svgStackedAreaDraw(pScreenWidth, 380, stmtTsArrayTr, "#chartStatementsTimeSeries", 1, "Test run", startTimeTr.toLocaleString('en-us', date_output), startTimeTr, finishTimeTr, maxStatementsTSAxis, stmtKeys, cat20Colors, "Seconds");
+
+
+        svgStackedAreaDraw(pScreenWidth,380,waitsTsArrayBr,"#chartWaitsTimeSeries",1,"Baseline", startTimeBr.toLocaleString('en-us', date_output), startTimeBr,finishTimeBr,maxWaitsTSAxis, waitsKeys, waitClassColors,"Seconds");
+        svgStackedAreaDraw(pScreenWidth,380,waitsTsArrayTr,"#chartWaitsTimeSeries",1,"Test Run", startTimeTr.toLocaleString('en-us', date_output), startTimeTr,finishTimeTr,maxWaitsTSAxis, waitsKeys, waitClassColors,"Seconds");
 
         ["io/file", "io/socket", "io/table", "io/aurora_redo_log_flus", "lock/metadata", "lock/table", "synch/cond", "synch/mutex", "synch/rwlock", "synch/sxlock"].forEach(function (d) {
-            if (waitsSummaryGroupsMySQL[d].columns) svgBarChartDraw(400, 450, waitsSummaryGroupsMySQL[d], "#chartWaitsSummary", cat20Colors, d, "Seconds");
+            if (waitsSummaryGroups[d].columns && ((waitsSummaryGroups[d][0].total + waitsSummaryGroups[d][1].total) > 0)) svgBarChartDraw(400, 450, waitsSummaryGroups[d], "#chartWaitsSummary", cat20Colors, d, "Seconds");
 
         });
 
         ["sql", "innodb"].forEach(function (d) {
-            if (stagesSummaryGroupsMySQL[d].columns) svgBarChartDraw(400, 450, stagesSummaryGroupsMySQL[d], "#chartStagesSummary", cat20Colors, d, "Seconds");
+            if (stagesSummaryGroups[d].columns && ((stagesSummaryGroups[d][0].total + stagesSummaryGroups[d][1].total) > 0)) svgBarChartDraw(400, 450, stagesSummaryGroups[d], "#chartStagesSummary", cat20Colors, d, "Seconds");
 
         });
 
         ["sql", "com", "sp", "scheduler"].forEach(function (d) {
-            if (statementsSummaryGroupsMySQL[d].columns) svgBarChartDraw(400, 450, statementsSummaryGroupsMySQL[d], "#chartStatementsSummary", cat20Colors, d, "Seconds");
+            if (statementsSummaryGroups[d].columns && ((statementsSummaryGroups[d][0].total + statementsSummaryGroups[d][1].total) > 0)) svgBarChartDraw(400, 450, statementsSummaryGroups[d], "#chartStatementsSummary", cat20Colors, d, "Seconds");
 
         });
 
 
-        sqlStatsChartDetailsMySQL.forEach(function (d) {
-            svgBarChartDraw(400, 450, sqlStatsGroupsMySQL[d.chartId], "#chart5", cat20Colors, d.chartName, d.axisName);
+        sqlStatsChartDetails.forEach(function (d) {
+            if ((sqlStatsGroups[d.chartId][0].total + sqlStatsGroups[d.chartId][1].total) > 0) svgBarChartDraw(400, 450, sqlStatsGroups[d.chartId], "#chart5", cat20Colors, d.chartName, d.axisName);
         });
 
 
-        sqlStatsTablesMySQL.forEach(function (d) {
-            if (sqlStatsMySQL[d].length > 0) {
-                var tempTable = drawTable(sqlStatsMySQL[d], sqlStatsColsMySQL[d], sqlStatsColsHeader1MySQL[d], sqlStatsColsHeader2MySQL[d], sqlStatsTableDetailsMySQL[d]["name"], "#chart6", sqlTableSummaryTextMySQL(d), tableDescriptionText);
-                sqlStatsTablesMySQL[d] = tempTable;
+        sqlStatsTables.forEach(function (d) {
+            if (sqlStats[d].length > 0) {
+                var tempTable = drawTable(pScreenWidth, sqlStats[d], sqlStatsCols[d], sqlStatsColsHeader1[d], sqlStatsColsHeader2[d], sqlStatsTableDetails[d]["name"], "#chart6", sqlTableSummaryText(d), tableDescriptionText);
+                sqlStatsTables[d] = tempTable;
             }
         });
         
 
 
-        var dbSummaryTable = drawTable(sqlStatsMySQL["DB_SUMMARY"], sqlStatsColsMySQL["DB_SUMMARY"], sqlStatsColsHeader1MySQL["DB_SUMMARY"], sqlStatsColsHeader2MySQL["DB_SUMMARY"], sqlStatsTableDetailsMySQL["DB_SUMMARY"]["name"], "#chart1", "", "");
+        var dbSummaryTable = drawTable(pScreenWidth, sqlStats["DB_SUMMARY"], sqlStatsCols["DB_SUMMARY"], sqlStatsColsHeader1["DB_SUMMARY"], sqlStatsColsHeader2["DB_SUMMARY"], sqlStatsTableDetails["DB_SUMMARY"]["name"], "#chart1", "", "");
         
-        var globalStatusTable = drawTable(sqlStatsMySQL["GLOBAL_STATUS"], sqlStatsColsMySQL["GLOBAL_STATUS"], sqlStatsColsHeader1MySQL["GLOBAL_STATUS"], sqlStatsColsHeader2MySQL["GLOBAL_STATUS"], sqlStatsTableDetailsMySQL["GLOBAL_STATUS"]["name"], "#chartGlobalStatus", "", tableDescriptionText);
+        var globalStatusTable = drawTable(pScreenWidth, sqlStats["GLOBAL_STATUS"], sqlStatsCols["GLOBAL_STATUS"], sqlStatsColsHeader1["GLOBAL_STATUS"], sqlStatsColsHeader2["GLOBAL_STATUS"], sqlStatsTableDetails["GLOBAL_STATUS"]["name"], "#chartGlobalStatus", "", tableDescriptionText);
 
-        var sqlTextTable = drawTable(sqlStatsMySQL["SQL_TEXT"], sqlStatsColsMySQL["SQL_TEXT"], sqlStatsColsHeader1MySQL["SQL_TEXT"], sqlStatsColsHeader2MySQL["SQL_TEXT"], sqlStatsTableDetailsMySQL["SQL_TEXT"]["name"], "#chartSqlText", "", "");
+        var sqlTextTable = drawTable(pScreenWidth, sqlStats["SQL_TEXT"], sqlStatsCols["SQL_TEXT"], sqlStatsColsHeader1["SQL_TEXT"], sqlStatsColsHeader2["SQL_TEXT"], sqlStatsTableDetails["SQL_TEXT"]["name"], "#chartSqlText", "", "");
 
-        sqlStatsTablesMySQL.forEach(function(x) {
-        if (sqlStatsMySQL[x].length > 0) {    
+        sqlStatsTables.forEach(function(x) {
+        if (sqlStats[x].length > 0) {    
             if (x == "COUNT_STAR") {
-                sqlStatsTablesMySQL[x].selectAll('td:nth-child(8)').style("background-color", function(d){if(+d.value > 0) {return colorInterpolateRed((+d.value)/getMaxDiffSqlStatMySQL(x)/2);} else {return colorInterpolateGreen((+d.value)/getMinDiffSqlStatMySQL(x)/2);};});
+                sqlStatsTables[x].selectAll('td:nth-child(8)').style("background-color", function(d){if(+d.value > 0) {return colorInterpolateRed((+d.value)/getMaxDiffSqlStat(x)/2);} else {return colorInterpolateGreen((+d.value)/getMinDiffSqlStat(x)/2);};});
             }
             else
             {
-                sqlStatsTablesMySQL[x].selectAll('td:nth-child(8)').style("background-color", function(d){if(+d.value > 0) {return colorInterpolateRed((+d.value)/getMaxDiffSqlStatMySQL(x)/2);} else {return colorInterpolateGreen((+d.value)/getMinDiffSqlStatMySQL(x)/2);};});
-                sqlStatsTablesMySQL[x].selectAll('td:nth-child(12)').style("background-color", function(d){return colorScale((+d.value))});
+                sqlStatsTables[x].selectAll('td:nth-child(8)').style("background-color", function(d){if(+d.value > 0) {return colorInterpolateRed((+d.value)/getMaxDiffSqlStat(x)/2);} else {return colorInterpolateGreen((+d.value)/getMinDiffSqlStat(x)/2);};});
+                sqlStatsTables[x].selectAll('td:nth-child(12)').style("background-color", function(d){return colorScale((+d.value))});
             }
         }
         });

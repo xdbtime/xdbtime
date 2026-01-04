@@ -4,9 +4,11 @@
 def compare(session, args):
 
     print('')
-    print('XDBTIME reports for MySQL')
-    print('Copyright (c) 2016, 2025, XDBTIME Taras Guliak')
-    print('Version: 2025.02')
+    print('xdbtime 2025.12 Community Edition for MySQL')
+    print('Database Performance Analysis & Comparison Tool')
+    print('')
+    print('Copyright (c) 2016, 2026, Taras Guliak')
+    print('Licensed under BSD 3-Clause License - see LICENSE file for details')
     print('')                                 
 
     isvalid = 1
